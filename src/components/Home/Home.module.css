@@ -1,0 +1,208 @@
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.125rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  background: var(--white);
+  border: 1.5px solid var(--beige-200);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s, transform 0.15s;
+  cursor: default;
+}
+
+.statCard:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.statLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-light);
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--red-700);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.statAccent {
+  background: linear-gradient(135deg, var(--red-900), var(--red-600));
+  border-color: transparent;
+}
+
+.statAccent .statLabel { color: rgba(255,255,255,0.7); }
+.statAccent .statValue { color: #fff; }
+
+/* ── TABLE SECTION ───────────────────────── */
+.section {
+  background: var(--white);
+  border: 1.5px solid var(--beige-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.125rem 1.5rem;
+  border-bottom: 1.5px solid var(--beige-200);
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  letter-spacing: -0.01em;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--beige-50);
+  border: 1.5px solid var(--beige-200);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.75rem;
+}
+
+.searchInput {
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 0.8125rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  color: var(--text-dark);
+  width: 180px;
+}
+
+.searchInput::placeholder { color: var(--beige-300); }
+
+.clearBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-light);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 0.1rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.table th {
+  padding: 0.75rem 1.25rem;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-light);
+  background: var(--beige-50);
+  border-bottom: 1.5px solid var(--beige-200);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 0.875rem 1.25rem;
+  color: var(--text-dark);
+  border-bottom: 1px solid var(--beige-100);
+  font-weight: 500;
+}
+
+.table tr:last-child td { border-bottom: none; }
+.table tr:hover td { background: var(--beige-50); }
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 2rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.badgeActive   { background: #E8F8F1; color: #1D7A4A; border: 1px solid #B7E8D0; }
+.badgeInactive { background: #FDF0F0; color: var(--red-600); border: 1px solid var(--red-200); }
+
+.actionBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-light);
+  padding: 0.25rem;
+  transition: color 0.15s;
+  font-size: 1rem;
+}
+
+.actionBtn:hover { color: var(--red-600); }
+
+.actionsCell { display: flex; gap: 0.5rem; align-items: center; }
+
+.empty {
+  text-align: center;
+  color: var(--text-light);
+  padding: 3rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 1rem 1.25rem;
+  border-top: 1.5px solid var(--beige-100);
+}
+
+.pageBtn {
+  min-width: 2rem;
+  height: 2rem;
+  background: none;
+  border: 1.5px solid var(--beige-200);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.pageBtn:hover { background: var(--beige-100); }
+
+.pageBtnActive {
+  background: var(--red-700);
+  border-color: var(--red-700);
+  color: #fff;
+}
+
+.pageBtnActive:hover { background: var(--red-700); }
+
+.pageDots {
+  color: var(--text-light);
+  font-weight: 700;
+  font-size: 0.875rem;
+  padding: 0 0.125rem;
+}

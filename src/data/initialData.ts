@@ -191,7 +191,7 @@ export const initialUsers: User[] = [
   {
     user_id: 1, last_name: 'Иванов', first_name: 'Алексей', middle_name: 'Сергеевич',
     email: 'admin@ecomenu.ru', phone: '+7 (900) 000-00-01', password: 'admin123',
-    is_active: true, role_id: 1, position_id: 13,
+    is_active: true, role_id: 1, position_id: 11,
   },
   {
     user_id: 2, last_name: 'Петрова', first_name: 'Мария', middle_name: 'Ивановна',

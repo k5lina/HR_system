@@ -16,11 +16,12 @@ import MedicalCheckForm from './components/Selection/MedicalCheckForm';
 import OfferForm from './components/Selection/OfferForm';
 import AnalyticsPage from './components/Analytics/AnalyticsPage';
 import DirectoriesPage from './components/Directories/DirectoriesPage';
+import HomePage from './components/Home/HomePage';
 
 function PrivateRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: number[] }) {
   const { currentUser } = useApp();
   if (!currentUser) return <Navigate to="/login" replace />;
-  if (allowedRoles && !allowedRoles.includes(currentUser.role_id)) return <Navigate to="/requests" replace />;
+  if (allowedRoles && !allowedRoles.includes(currentUser.role_id)) return <Navigate to="/home" replace />;
   return <>{children}</>;
 }
 
@@ -29,9 +30,10 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/login" element={currentUser ? <Navigate to="/requests" replace /> : <LoginPage />} />
+      <Route path="/login" element={currentUser ? <Navigate to="/home" replace /> : <LoginPage />} />
       <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
-        <Route index element={<Navigate to="/requests" replace />} />
+        <Route index element={<Navigate to="/home" replace />} />
+        <Route path="home" element={<HomePage />} />
         <Route path="requests" element={<RequestList />} />
         <Route path="requests/new" element={<RequestForm />} />
         <Route path="requests/:id" element={<RequestForm />} />
