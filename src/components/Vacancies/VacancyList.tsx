@@ -28,7 +28,6 @@ export default function VacancyList() {
     <div>
       <div className={styles.header}>
         <h2 className={styles.title}>Вакансии</h2>
-        <Link to="/vacancies/new" className={styles.btnNew}>+ Новая вакансия</Link>
       </div>
       <div className={styles.tableWrap}>
         <table className={styles.table}>

@@ -12,7 +12,7 @@ export default function RequestForm() {
     departments, positions, employmentTypes, currentUser, users
   } = useApp();
 
-  const isNew = id === 'new';
+  const isNew = !id || id === 'new';
   const existing = isNew ? null : requests.find((r) => r.request_id === Number(id));
 
   const [deptId, setDeptId] = useState(0);
@@ -51,9 +51,7 @@ export default function RequestForm() {
       console.log('saving newReq', newReq);
       try {
         setRequests((prev) => {
-          console.log('prev requests:', prev);
           const next = [...prev, newReq as any];
-          console.log('next requests:', next);
           return next;
         });
       } catch (e) {

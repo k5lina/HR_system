@@ -6,7 +6,7 @@ import styles from './Requests.module.css';
 const PAGE_SIZE = 10;
 
 export default function RequestList() {
-  const { requests, requestStatuses, departmentPositions, departments, positions, currentUser, employmentTypes } = useApp();
+  const { requests, setRequests, requestStatuses, departmentPositions, departments, positions, currentUser, employmentTypes } = useApp();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
@@ -32,6 +32,12 @@ export default function RequestList() {
     const dept = departments.find((d) => d.department_id === dp.department_id)?.name ?? '—';
     const pos = positions.find((p) => p.position_id === dp.position_id)?.name ?? '—';
     return { dept, pos };
+  }
+
+  function handleDelete(id: number) {
+    if (window.confirm('Вы уверены, что хотите удалить эту заявку?')) {
+      setRequests((prev) => prev.filter((r) => r.request_id !== id));
+    }
   }
 
   return (
@@ -75,6 +81,11 @@ export default function RequestList() {
               const { dept, pos } = getDeptPos(req.department_position_id);
               const empType = employmentTypes.find(e => e.employment_type_id === req.employment_type_id)?.name ?? '—';
               const statusName = requestStatuses.find((s) => s.request_status_id === req.request_status_id)?.name ?? '—';
+              const sId = req.request_status_id;
+              let statusClass = styles.statusNew;
+              if (sId === 2) statusClass = styles.statusWork;
+              else if (sId === 3) statusClass = styles.statusDone;
+              else if (sId === 4) statusClass = styles.statusRejected;
               
               return (
                 <tr key={req.request_id}>
@@ -83,7 +94,11 @@ export default function RequestList() {
                   <td>{dept}</td>
                   <td>{empType}</td>
                   <td>{new Date(req.created_at).toLocaleDateString('ru-RU')}</td>
-                  <td>{statusName}</td>
+                  <td>
+                    <span className={`${styles.badge} ${statusClass}`}>
+                      {statusName}
+                    </span>
+                  </td>
                   <td>
                     <div className={styles.actionCell}>
                       <Link to={`/requests/${req.request_id}`} className={styles.actionIcon} title="Изменить">
@@ -91,7 +106,7 @@ export default function RequestList() {
                           <path d="M14.121 4.379a3 3 0 00-4.242 0L3 11.243v4.242h4.242l6.879-6.879a3 3 0 000-4.243zM10.5 7.5l2.25 2.25"/>
                         </svg>
                       </Link>
-                      <button className={styles.actionIcon} title="Удалить">
+                      <button className={styles.actionIcon} title="Удалить" onClick={() => handleDelete(req.request_id)}>
                         <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <path d="M4 7h16M10 11v6M14 11v6M5 7l1 14h12l1-14M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/>
                         </svg>
