@@ -121,7 +121,6 @@ export default function DirectoriesPage() {
 
   return (
     <div>
-      <h2 className={styles.title}>Справочники</h2>
       <div className={dirStyles.tabs}>
         {DIR_TABS.map((tab) => (
           <button

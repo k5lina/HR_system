@@ -301,10 +301,6 @@ export default function SelectionPage() {
 
   return (
     <div className={styles.section}>
-      <div className={styles.header}>
-        <h2 className={styles.title}>Отбор кандидатов</h2>
-      </div>
-
       {/* Stage tabs */}
       <div className={styles.stageTabs}>
         {stages.map((stage) => (
@@ -355,6 +351,9 @@ export default function SelectionPage() {
           )}
         </div>
       </div>
+
+      {/* Candidates label */}
+      <div className={styles.sectionLabel}>Кандидаты</div>
 
       {/* Table */}
       <div className={styles.tableWrap}>

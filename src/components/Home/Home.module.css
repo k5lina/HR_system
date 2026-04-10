@@ -206,3 +206,82 @@
   font-size: 0.875rem;
   padding: 0 0.125rem;
 }
+
+/* ── Analytics hub ───────────────────────── */
+.analyticsSection {
+  margin-top: 2rem;
+}
+
+.analyticsSectionCentered {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.analyticsSectionTitle {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  letter-spacing: -0.01em;
+  margin-bottom: 1rem;
+}
+
+.analyticsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.analyticsGridCentered {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(200px, 280px));
+  gap: 1.25rem;
+  justify-content: center;
+}
+
+.analyticsCard {
+  background: var(--white);
+  border: 1.5px solid var(--beige-200);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.analyticsCard:hover {
+  border-color: var(--red-400);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.analyticsCardIcon {
+  width: 36px;
+  height: 36px;
+  background: var(--beige-100);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dark);
+}
+
+.analyticsCardTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.analyticsCardDesc {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-light);
+  line-height: 1.4;
+}

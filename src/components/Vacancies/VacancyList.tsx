@@ -91,10 +91,6 @@ export default function VacancyList() {
 
   return (
     <div className={styles.section}>
-      <div className={styles.header}>
-        <h2 className={styles.title}>Вакансии</h2>
-      </div>
-
       <div className={styles.topActions}>
         <div />
         <div className={styles.searchBox}>

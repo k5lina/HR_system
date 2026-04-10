@@ -9,7 +9,6 @@ const NAV: NavItem[] = [
   { to: '/requests',   label: 'Заявки на подбор персонала', roles: [1, 2, 3] },
   { to: '/vacancies',  label: 'Вакансии',                   roles: [1, 2] },
   { to: '/selection',  label: 'Отбор кандидатов',            roles: [1, 2, 3] },
-  { to: '/analytics',  label: 'Аналитика',                  roles: [1, 2, 3] },
   { to: '/directories',label: 'Справочники',                roles: [1] },
 ];
 

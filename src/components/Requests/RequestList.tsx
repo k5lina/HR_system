@@ -42,10 +42,6 @@ export default function RequestList() {
 
   return (
     <div className={styles.section}>
-      <div className={styles.header}>
-        <h2 className={styles.title}>Заявки на подбор персонала</h2>
-      </div>
-
       <div className={styles.topActions}>
         {(currentUser?.role_id === 1 || currentUser?.role_id === 3) && (
           <Link to="/requests/new" className={styles.btnToolbar}>Создать новую заявку</Link>

@@ -1,7 +1,42 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import styles from './Home.module.css';
+
+const REPORTS = [
+  {
+    path: '/analytics/funnel',
+    title: 'Воронка кандидатов',
+    desc: 'Конверсия по этапам отбора',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M3 4h18l-7 9v6l-4-2v-4L3 4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+  {
+    path: '/analytics/time',
+    title: 'Среднее время закрытия вакансий',
+    desc: 'Время на каждом этапе воронки',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8"/>
+        <path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    path: '/analytics/reasons',
+    title: 'Причины отказов кандидатам',
+    desc: 'Распределение отказов по причинам',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z" stroke="currentColor" strokeWidth="1.8"/>
+        <path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+];
 
 const PAGE_SIZE = 10;
 
@@ -108,6 +143,24 @@ export default function HomePage() {
   ];
 
   const showTable = roleId === 1 || roleId === 2;
+  const navigate = useNavigate();
+
+  function renderAnalyticsHub(centered: boolean) {
+    return (
+      <div className={centered ? styles.analyticsSectionCentered : styles.analyticsSection}>
+        <div className={styles.analyticsSectionTitle}>Аналитика</div>
+        <div className={centered ? styles.analyticsGridCentered : styles.analyticsGrid}>
+          {REPORTS.map((r) => (
+            <button key={r.path} className={styles.analyticsCard} onClick={() => navigate(r.path)}>
+              <div className={styles.analyticsCardIcon}>{r.icon}</div>
+              <div className={styles.analyticsCardTitle}>{r.title}</div>
+              <div className={styles.analyticsCardDesc}>{r.desc}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -122,6 +175,9 @@ export default function HomePage() {
           </div>
         ))}
       </div>
+
+      {/* Analytics hub for Head (role 3) — centered, no vacancy table */}
+      {roleId === 3 && renderAnalyticsHub(true)}
 
       {showTable && (
         <div className={styles.section}>
@@ -190,6 +246,9 @@ export default function HomePage() {
           {renderPagination()}
         </div>
       )}
+
+      {/* Analytics hub for HR / Admin (roles 1, 2) — below the table */}
+      {showTable && renderAnalyticsHub(false)}
     </div>
   );
 }
