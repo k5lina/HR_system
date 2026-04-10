@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import styles from '../Requests/Requests.module.css';
 
@@ -48,13 +48,17 @@ export default function SelectionPage() {
     return [
       { kind: 'phone', label: 'Телефонные интервью' },
       { kind: 'main', label: 'Собеседования с руководителем' },
-      { kind: 'security', label: 'Проверка в СБ' },
+      { kind: 'security', label: 'Проверки в СБ' },
       { kind: 'medical', label: 'Медицинские проверки' },
       { kind: 'offer', label: 'Предложения о трудоустройстве' },
     ];
   }, [roleId]);
 
-  const [activeStage, setActiveStage] = useState<StageKind>(stages[0].kind);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const stageParam = searchParams.get('stage') as StageKind | null;
+  const [activeStage, setActiveStage] = useState<StageKind>(
+    stageParam && stages.some((s) => s.kind === stageParam) ? stageParam : stages[0].kind,
+  );
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [posFilter, setPosFilter] = useState(0); // for 'suitable' tab
@@ -229,6 +233,7 @@ export default function SelectionPage() {
 
   function handleStageChange(kind: StageKind) {
     setActiveStage(kind);
+    setSearchParams({ stage: kind }, { replace: true });
     setPage(1);
     setSearch('');
     setPosFilter(0);
