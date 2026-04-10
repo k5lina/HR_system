@@ -8,8 +8,8 @@ export default function RequestForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const {
-    requests, setRequests, requestStatuses, departmentPositions,
-    departments, positions, employmentTypes, currentUser,
+    requests, setRequests, departmentPositions,
+    departments, positions, employmentTypes, currentUser, users
   } = useApp();
 
   const isNew = id === 'new';
@@ -20,7 +20,7 @@ export default function RequestForm() {
   const [employmentTypeId, setEmploymentTypeId] = useState(existing?.employment_type_id ?? 1);
   const [responsibilities, setResponsibilities] = useState(existing?.responsibilities ?? '');
   const [requirements, setRequirements] = useState(existing?.requirements ?? '');
-  const [experience, setExperience] = useState(existing?.experience ?? 0);
+  const [experience, setExperience] = useState<string | number>(existing?.experience ?? '');
   const [salaryMin, setSalaryMin] = useState(existing?.salary_min ?? '');
   const [salaryMax, setSalaryMax] = useState(existing?.salary_max ?? '');
   const [education, setEducation] = useState(existing?.education ?? '');
@@ -33,10 +33,6 @@ export default function RequestForm() {
   }, [existing, departmentPositions]);
 
   const filteredDps = departmentPositions.filter((dp) => dp.department_id === deptId);
-
-  function statusName(id: number) {
-    return requestStatuses.find((s) => s.request_status_id === id)?.name ?? 'Новая';
-  }
 
   function handleSave(statusId: number) {
     if (isNew) {
@@ -52,7 +48,17 @@ export default function RequestForm() {
         employment_type_id: employmentTypeId,
         department_position_id: dpId,
       };
-      setRequests((prev) => [...prev, newReq]);
+      console.log('saving newReq', newReq);
+      try {
+        setRequests((prev) => {
+          console.log('prev requests:', prev);
+          const next = [...prev, newReq as any];
+          console.log('next requests:', next);
+          return next;
+        });
+      } catch (e) {
+        console.error('setRequests error', e);
+      }
     } else if (existing) {
       setRequests((prev) =>
         prev.map((r) =>
@@ -62,101 +68,145 @@ export default function RequestForm() {
         )
       );
     }
+    console.log('navigating to /requests');
     navigate('/requests');
   }
 
-  function handleCreateVacancy() {
-    navigate(`/vacancies/new?requestId=${existing?.request_id}`);
-  }
-
-  const canEdit = currentUser?.role_id === 1 || currentUser?.role_id === 3;
-  const canApprove = currentUser?.role_id === 1 || currentUser?.role_id === 2;
+  const roleId = currentUser?.role_id ?? 2;
   const currentStatus = existing?.request_status_id ?? 1;
 
+  const canEdit = true;
+  const showSave = true;
+  const showSubmit = roleId === 1 || (roleId === 3 && (isNew || currentStatus === 1));
+  const showCreateVacancy = (roleId === 1 || roleId === 2) && !isNew && currentStatus !== 4;
+  const showReject = (roleId === 1 || roleId === 2) && !isNew && currentStatus !== 4;
+
+  const headDeptIds = roleId === 3 && currentUser
+    ? departmentPositions
+        .filter((dp) => dp.position_id === currentUser.position_id)
+        .map((dp) => dp.department_id)
+    : null;
+
+  const visibleDepartments = headDeptIds
+    ? departments.filter((d) => headDeptIds.includes(d.department_id))
+    : departments;
+
+  let displayId = 'заполняется автоматически';
+  let displayDate = 'заполняется автоматически';
+  let authorName = 'заполняется автоматически';
+
+  if (existing) {
+    displayId = String(existing.request_id);
+    displayDate = new Date(existing.created_at).toLocaleDateString('ru-RU');
+    const author = users.find(u => u.user_id === existing.user_id);
+    if (author) authorName = `${author.last_name} ${author.first_name}`;
+  } else if (currentUser) {
+    authorName = currentUser.full_name;
+  }
+
+  function handleSaveAndValidate(statusId: number) {
+    handleSave(statusId);
+  }
+
   return (
-    <div>
+    <div className={styles.section}>
       <div className={styles.header}>
-        <h2 className={styles.title}>{isNew ? 'Новая заявка' : `Заявка #${id}`}</h2>
-        <Link to="/requests" className={styles.linkBtn}>← Назад</Link>
+        <Link to="/requests" className={styles.backBtn}>
+          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" style={{marginRight: '0.5rem'}}>
+            <path d="M19 12H5M12 19L5 12l7-7"/>
+          </svg>
+        </Link>
+        <h2 className={styles.title}>Заявка на подбор персонала</h2>
       </div>
-      <div className={styles.form}>
-        <div className={styles.formGrid}>
-          <div className={styles.formField}>
-            <label className={styles.formLabel}>Дата создания</label>
-            <div className={styles.readonly}>{isNew ? new Date().toLocaleDateString('ru-RU') : new Date(existing!.created_at).toLocaleDateString('ru-RU')}</div>
-          </div>
-          <div className={styles.formField}>
-            <label className={styles.formLabel}>Статус</label>
-            <div className={styles.statusBadge}>{statusName(currentStatus)}</div>
-          </div>
-          <div className={styles.formField}>
-            <label className={styles.formLabel}>Отдел</label>
-            <select className={styles.formSelect} value={deptId} onChange={(e) => { setDeptId(Number(e.target.value)); setDpId(0); }} disabled={!canEdit}>
-              <option value={0}>— Выберите отдел —</option>
-              {departments.map((d) => (
-                <option key={d.department_id} value={d.department_id}>{d.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className={styles.formField}>
-            <label className={styles.formLabel}>Должность</label>
-            <select className={styles.formSelect} value={dpId} onChange={(e) => setDpId(Number(e.target.value))} disabled={!canEdit || !deptId}>
-              <option value={0}>— Выберите должность —</option>
-              {filteredDps.map((dp) => {
-                const pos = positions.find((p) => p.position_id === dp.position_id);
-                return <option key={dp.department_position_id} value={dp.department_position_id}>{pos?.name}</option>;
-              })}
-            </select>
-          </div>
-          <div className={styles.formField}>
-            <label className={styles.formLabel}>Тип занятости</label>
-            <select className={styles.formSelect} value={employmentTypeId} onChange={(e) => setEmploymentTypeId(Number(e.target.value))} disabled={!canEdit}>
-              {employmentTypes.map((et) => (
-                <option key={et.employment_type_id} value={et.employment_type_id}>{et.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className={styles.formField}>
-            <label className={styles.formLabel}>Опыт (лет)</label>
-            <input type="number" className={styles.formInput} value={experience} onChange={(e) => setExperience(Number(e.target.value))} min={0} disabled={!canEdit} />
-          </div>
-          <div className={styles.formField}>
-            <label className={styles.formLabel}>Зарплата от</label>
-            <input type="number" className={styles.formInput} value={salaryMin} onChange={(e) => setSalaryMin(e.target.value)} disabled={!canEdit} />
-          </div>
-          <div className={styles.formField}>
-            <label className={styles.formLabel}>Зарплата до</label>
-            <input type="number" className={styles.formInput} value={salaryMax} onChange={(e) => setSalaryMax(e.target.value)} disabled={!canEdit} />
-          </div>
-          <div className={styles.formFieldFull}>
-            <label className={styles.formLabel}>Обязанности</label>
-            <textarea className={styles.formTextarea} value={responsibilities} onChange={(e) => setResponsibilities(e.target.value)} rows={4} disabled={!canEdit} />
-          </div>
-          <div className={styles.formFieldFull}>
-            <label className={styles.formLabel}>Требования</label>
-            <textarea className={styles.formTextarea} value={requirements} onChange={(e) => setRequirements(e.target.value)} rows={4} disabled={!canEdit} />
-          </div>
-          <div className={styles.formFieldFull}>
-            <label className={styles.formLabel}>Образование</label>
-            <textarea className={styles.formTextarea} value={education} onChange={(e) => setEducation(e.target.value)} rows={2} disabled={!canEdit} />
-          </div>
+
+      <div className={styles.formToolbar}>
+        {showSave && <button className={styles.btnSave} onClick={() => handleSaveAndValidate(currentStatus)}>Сохранить запись</button>}
+        {showSubmit && (
+          <button className={styles.btnSubmit} onClick={() => handleSaveAndValidate(2)}>Отправить заявку</button>
+        )}
+        {showCreateVacancy && (
+          <button className={styles.btnSubmit} onClick={() => navigate(`/vacancies/new?requestId=${existing?.request_id}`)}>Создать вакансию</button>
+        )}
+        {showReject && (
+          <button className={styles.btnSubmit} onClick={() => handleSaveAndValidate(4)}>Отклонить</button>
+        )}
+      </div>
+
+      <div className={styles.autoFields}>
+        <div className={styles.autoRow}>
+          <span className={styles.autoLabel}>Номер заявки</span>
+          <span className={styles.autoValue}>{displayId}</span>
         </div>
-        <div className={styles.formActions}>
-          {canEdit && isNew && (
-            <button className={styles.btnSecondary} onClick={() => handleSave(1)}>Сохранить черновик</button>
-          )}
-          {canEdit && currentStatus === 1 && (
-            <button className={styles.btnPrimary} onClick={() => handleSave(2)}>Отправить на согласование</button>
-          )}
-          {canApprove && currentStatus === 2 && (
-            <>
-              <button className={styles.btnSuccess} onClick={() => handleSave(3)}>Утвердить</button>
-              <button className={styles.btnDanger} onClick={() => handleSave(4)}>Отклонить</button>
-            </>
-          )}
-          {canApprove && currentStatus === 3 && (
-            <button className={styles.btnPrimary} onClick={handleCreateVacancy}>Создать вакансию</button>
-          )}
+        <div className={styles.autoRow}>
+          <span className={styles.autoLabel}>Дата создания</span>
+          <span className={styles.autoValue}>{displayDate}</span>
+        </div>
+        <div className={styles.autoRow}>
+          <span className={styles.autoLabel}>Руководитель отдела</span>
+          <span className={styles.autoValue}>{authorName}</span>
+        </div>
+      </div>
+
+      <div className={styles.formGrid}>
+        <div className={styles.fieldRow}>
+          <label className={styles.fieldRowLabel}>Отдел</label>
+          <select className={styles.fieldRowSelect} value={deptId} onChange={(e) => { setDeptId(Number(e.target.value)); setDpId(0); }} disabled={!canEdit}>
+            <option value={0}>Отдел</option>
+            {visibleDepartments.map((d) => (
+              <option key={d.department_id} value={d.department_id}>{d.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.fieldRow}>
+          <label className={styles.fieldRowLabel}>Требуемый опыт работы</label>
+          <input type="text" className={styles.fieldRowInput} value={experience} onChange={(e) => setExperience(e.target.value)} disabled={!canEdit} />
+        </div>
+
+        <div className={styles.fieldRow}>
+          <label className={styles.fieldRowLabel}>Должность</label>
+          <select className={styles.fieldRowSelect} value={dpId} onChange={(e) => setDpId(Number(e.target.value))} disabled={!canEdit || !deptId}>
+            <option value={0}>Должность</option>
+            {filteredDps.map((dp) => {
+              const pos = positions.find((p) => p.position_id === dp.position_id);
+              return <option key={dp.department_position_id} value={dp.department_position_id}>{pos?.name}</option>;
+            })}
+          </select>
+        </div>
+        <div className={styles.fieldRow}>
+          <label className={styles.fieldRowLabel}>Тип занятости</label>
+          <select className={styles.fieldRowSelect} value={employmentTypeId} onChange={(e) => setEmploymentTypeId(Number(e.target.value))} disabled={!canEdit}>
+            {employmentTypes.map((et) => (
+              <option key={et.employment_type_id} value={et.employment_type_id}>{et.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className={styles.formBlock}>
+        <label className={styles.blockLabel}>Образование</label>
+        <textarea className={styles.blockTextarea} style={{height: '60px'}} value={education} onChange={(e) => setEducation(e.target.value)} placeholder="Образование" disabled={!canEdit} />
+      </div>
+
+      <div className={styles.formGrid}>
+        <div className={styles.formBlock} style={{marginBottom: 0}}>
+          <label className={styles.blockLabel}>Обязанности</label>
+          <textarea className={styles.blockTextarea} style={{height: '250px'}} value={responsibilities} onChange={(e) => setResponsibilities(e.target.value)} placeholder="Обязанности" disabled={!canEdit} />
+        </div>
+        <div className={styles.formBlock} style={{marginBottom: 0}}>
+          <label className={styles.blockLabel}>Требования</label>
+          <textarea className={styles.blockTextarea} style={{height: '250px'}} value={requirements} onChange={(e) => setRequirements(e.target.value)} placeholder="Требования" disabled={!canEdit} />
+        </div>
+      </div>
+
+      <div className={styles.bottomFields}>
+        <div className={styles.bottomRow}>
+          <span className={styles.bottomLabel}>Минимальный уровень зарплаты (руб.)</span>
+          <input type="number" className={styles.bottomInput} value={salaryMin} onChange={(e) => setSalaryMin(e.target.value)} disabled={!canEdit} />
+        </div>
+        <div className={styles.bottomRow}>
+          {/* Mockup has typo and says "Минимальный" twice, we'll use Максимальный for clarity instead */}
+          <span className={styles.bottomLabel}>Максимальный уровень зарплаты (руб.)</span>
+          <input type="number" className={styles.bottomInput} value={salaryMax} onChange={(e) => setSalaryMax(e.target.value)} disabled={!canEdit} />
         </div>
       </div>
     </div>

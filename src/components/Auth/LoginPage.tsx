@@ -4,7 +4,7 @@ import { useApp } from '../../context/AppContext';
 import styles from './Auth.module.css';
 
 const DEMO_USERS = [
-  { label: 'Администратор — Петров П.П.', email: 'admin@ecomenu.ru', password: 'admin123' },
+  { label: 'Администратор ', email: 'admin@ecomenu.ru', password: 'admin123' },
   { label: 'Менеджер по подбору персонала', email: 'manager@ecomenu.ru', password: 'manager123' },
   { label: 'Руководитель подразделения', email: 'head@ecomenu.ru', password: 'head123' },
 ];
