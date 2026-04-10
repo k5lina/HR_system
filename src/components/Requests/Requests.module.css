@@ -56,8 +56,8 @@
 
 /* Form View */
 .formToolbar { display: flex; gap: 1rem; margin-bottom: 2.5rem; }
-.btnSave { background: var(--beige-200); border: none; padding: 0.6rem 1.25rem; font-weight: 700; cursor: pointer; font-family: inherit; }
-.btnSubmit { background: var(--beige-200); border: none; padding: 0.6rem 1.25rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+.btnSave { background: var(--beige-200); border: none; padding: 0.6rem 1.25rem; font-weight: 700; cursor: pointer; font-family: inherit; color: var(--text-dark); text-decoration: none; display: inline-block; }
+.btnSubmit { background: var(--beige-200); border: none; padding: 0.6rem 1.25rem; font-weight: 700; cursor: pointer; font-family: inherit; color: var(--text-dark); text-decoration: none; display: inline-block; }
 
 .autoFields { display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 3rem; }
 .autoRow { display: flex; align-items: center; }

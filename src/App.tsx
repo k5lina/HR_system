@@ -14,6 +14,7 @@ import MainInterviewForm from './components/Selection/MainInterviewForm';
 import SecurityCheckForm from './components/Selection/SecurityCheckForm';
 import MedicalCheckForm from './components/Selection/MedicalCheckForm';
 import OfferForm from './components/Selection/OfferForm';
+import SelectionPage from './components/Selection/SelectionPage';
 import AnalyticsPage from './components/Analytics/AnalyticsPage';
 import DirectoriesPage from './components/Directories/DirectoriesPage';
 import HomePage from './components/Home/HomePage';
@@ -43,6 +44,7 @@ function AppRoutes() {
         <Route path="published" element={<PrivateRoute allowedRoles={[1, 2]}><PublishedVacancyList /></PrivateRoute>} />
         <Route path="published/:id" element={<PrivateRoute allowedRoles={[1, 2]}><PublishedVacancyCard /></PrivateRoute>} />
         <Route path="candidates/:id" element={<CandidateProfile />} />
+        <Route path="selection" element={<PrivateRoute allowedRoles={[1, 2, 3]}><SelectionPage /></PrivateRoute>} />
         <Route path="selection/:candidateId/phone-interview" element={<PrivateRoute allowedRoles={[1, 2]}><PhoneInterviewForm /></PrivateRoute>} />
         <Route path="selection/:candidateId/main-interview" element={<PrivateRoute allowedRoles={[1, 2, 3]}><MainInterviewForm /></PrivateRoute>} />
         <Route path="selection/:candidateId/security-check" element={<PrivateRoute allowedRoles={[1, 2]}><SecurityCheckForm /></PrivateRoute>} />
