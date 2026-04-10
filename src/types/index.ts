@@ -185,6 +185,7 @@ export interface Interview {
   questions: string;
   answers?: string;
   score?: number;
+  notes?: string;
   candidate_id: number;
   stage_id: number;
   interview_status_id: number;

@@ -377,12 +377,35 @@ export const initialInterviews: Interview[] = [
     scheduled_at: '2024-01-22T11:00:00',
     questions: 'Опыт работы? Почему хотите сменить работу?',
     candidate_id: 2,
-    stage_id: 2,
+    stage_id: 3,
     interview_status_id: 1,
     user_id: 2,
   },
 ];
 
-export const initialSecurityChecks: SecurityCheck[] = [];
-export const initialMedicalChecks: MedicalCheck[] = [];
+export const initialSecurityChecks: SecurityCheck[] = [
+  {
+    security_check_id: 1,
+    created_at: '2024-01-25',
+    finished_at: '2024-01-27',
+    conclusion_path: '/security/conclusion_21.pdf',
+    result: true,
+    candidate_id: 2,
+  },
+];
+export const initialMedicalChecks: MedicalCheck[] = [
+  {
+    medical_check_id: 1,
+    created_at: '2024-02-01',
+    finished_at: '2024-02-05T14:00:00',
+    has_medical_book: true,
+    medical_book_check_result: true,
+    medical_exam_date: '2024-02-03T10:00:00',
+    is_medical_book_prepared: true,
+    medical_exam_result: true,
+    conclusion_path: '/medical/conclusion_26.pdf',
+    candidate_id: 2,
+    medical_check_status_id: 4,
+  },
+];
 export const initialJobOffers: JobOffer[] = [];

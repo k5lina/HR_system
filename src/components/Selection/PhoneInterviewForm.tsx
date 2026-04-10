@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { nextId } from '../../utils';
 import styles from '../Requests/Requests.module.css';
@@ -8,7 +8,15 @@ export default function PhoneInterviewForm() {
   const { candidateId } = useParams();
   const cId = Number(candidateId);
   const navigate = useNavigate();
-  const { candidates, setCandidates, interviews, setInterviews, interviewStatuses, rejectionReasons, currentUser } = useApp();
+
+  const {
+    candidates, setCandidates,
+    interviews, setInterviews,
+    publications, vacancies, requests,
+    departmentPositions, positions,
+    rejectionReasons,
+    currentUser, users,
+  } = useApp();
 
   const candidate = candidates.find((c) => c.candidate_id === cId);
   const existing = interviews.find((i) => i.candidate_id === cId && i.stage_id === 2);
@@ -16,99 +24,187 @@ export default function PhoneInterviewForm() {
   const [scheduledAt, setScheduledAt] = useState(existing?.scheduled_at?.slice(0, 16) ?? '');
   const [questions, setQuestions] = useState(existing?.questions ?? '');
   const [answers, setAnswers] = useState(existing?.answers ?? '');
-  const [score, setScore] = useState(existing?.score ?? '');
-  const [statusId, setStatusId] = useState(existing?.interview_status_id ?? 1);
-  const [rejectionId, setRejectionId] = useState<number>(0);
-  const [showRejection, setShowRejection] = useState(false);
+  const [notes, setNotes] = useState(existing?.notes ?? '');
 
-  function saveInterview(newStatusId: number) {
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectionId, setRejectionId] = useState(rejectionReasons[0]?.rejection_reason_id ?? 1);
+
+  // ---- resolve meta ----
+  const pub = candidate ? publications.find((p) => p.publication_id === candidate.publication_id) : null;
+  const vacancy = pub ? vacancies.find((v) => v.vacancy_id === pub.vacancy_id) : null;
+  const linkedRequest = vacancy ? requests.find((r) => r.request_id === vacancy.request_id) : null;
+  const dp = linkedRequest
+    ? departmentPositions.find((d) => d.department_position_id === linkedRequest.department_position_id)
+    : null;
+  const linkedPos = dp ? positions.find((p) => p.position_id === dp.position_id) : null;
+  const positionName = linkedPos?.name ?? vacancy?.title ?? '—';
+
+  const managerName = currentUser?.full_name ?? '—';
+
+  const candidateName = candidate
+    ? `${candidate.last_name} ${candidate.first_name}${candidate.middle_name ? ' ' + candidate.middle_name : ''}`
+    : '—';
+
+  const backTo = pub ? `/published/${pub.vacancy_id}` : '/home';
+
+  // ---- save ----
+  function saveRecord(statusId: number) {
     const now = new Date().toISOString();
     if (existing) {
       setInterviews((prev) =>
-        prev.map((i) => i.interview_id === existing.interview_id
-          ? { ...i, scheduled_at: scheduledAt, questions, answers, score: score ? Number(score) : undefined, interview_status_id: newStatusId, finished_at: now }
-          : i)
+        prev.map((i) =>
+          i.interview_id === existing.interview_id
+            ? { ...i, scheduled_at: scheduledAt, questions, answers, notes, interview_status_id: statusId, finished_at: now }
+            : i,
+        ),
       );
     } else {
-      setInterviews((prev) => [...prev, {
-        interview_id: nextId(interviews, 'interview_id'),
-        created_at: now, finished_at: newStatusId === 2 ? now : undefined,
-        scheduled_at: scheduledAt, questions, answers,
-        score: score ? Number(score) : undefined,
-        candidate_id: cId, stage_id: 2,
-        interview_status_id: newStatusId, user_id: currentUser!.user_id,
-      }]);
+      setInterviews((prev) => [
+        ...prev,
+        {
+          interview_id: nextId(interviews, 'interview_id'),
+          created_at: now,
+          finished_at: statusId !== 1 ? now : undefined,
+          scheduled_at: scheduledAt,
+          questions,
+          answers,
+          notes,
+          candidate_id: cId,
+          stage_id: 2,
+          interview_status_id: statusId,
+          user_id: currentUser!.user_id,
+        },
+      ]);
     }
   }
 
-  function handleSuccess() {
-    saveInterview(2);
-    setCandidates((prev) =>
-      prev.map((c) => c.candidate_id === cId ? { ...c, stage_id: 3 } : c)
-    );
-    navigate(`/candidates/${cId}`);
+  function handleSave() {
+    saveRecord(existing?.interview_status_id ?? 1);
   }
 
-  function handleReject() {
-    if (!rejectionId) { setShowRejection(true); return; }
-    saveInterview(4);
+  function handleApprove() {
+    saveRecord(2);
     setCandidates((prev) =>
-      prev.map((c) => c.candidate_id === cId ? { ...c, rejection_reason_id: rejectionId } : c)
+      prev.map((c) => c.candidate_id === cId ? { ...c, stage_id: 3 } : c),
     );
-    navigate(`/candidates/${cId}`);
+    navigate(backTo);
   }
 
-  if (!candidate) return <p>Кандидат не найден</p>;
+  function handleRejectConfirm() {
+    saveRecord(4);
+    setCandidates((prev) =>
+      prev.map((c) => c.candidate_id === cId ? { ...c, rejection_reason_id: rejectionId } : c),
+    );
+    setShowRejectModal(false);
+    navigate(backTo);
+  }
+
+  if (!candidate) return <p className={styles.empty}>Кандидат не найден</p>;
 
   return (
-    <div>
+    <div className={styles.section}>
+      {/* Header */}
       <div className={styles.header}>
-        <h2 className={styles.title}>Телефонное интервью — {candidate.last_name} {candidate.first_name}</h2>
-        <Link to={`/candidates/${cId}`} className={styles.linkBtn}>← Назад</Link>
+        <button className={styles.backBtn} onClick={() => navigate(-1)}>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+        <h1 className={styles.title}>Телефонное интервью</h1>
       </div>
-      <div className={styles.form}>
-        <div className={styles.formGrid}>
-          <div className={styles.formField}>
-            <label className={styles.formLabel}>Дата и время</label>
-            <input type="datetime-local" className={styles.formInput} value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
-          </div>
-          <div className={styles.formField}>
-            <label className={styles.formLabel}>Оценка (0–10)</label>
-            <input type="number" className={styles.formInput} value={score} onChange={(e) => setScore(e.target.value)} min={0} max={10} />
-          </div>
-          <div className={styles.formField}>
-            <label className={styles.formLabel}>Статус</label>
-            <select className={styles.formSelect} value={statusId} onChange={(e) => setStatusId(Number(e.target.value))}>
-              {interviewStatuses.map((s) => (
-                <option key={s.interview_status_id} value={s.interview_status_id}>{s.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className={styles.formFieldFull}>
-            <label className={styles.formLabel}>Вопросы</label>
-            <textarea className={styles.formTextarea} value={questions} onChange={(e) => setQuestions(e.target.value)} rows={4} />
-          </div>
-          <div className={styles.formFieldFull}>
-            <label className={styles.formLabel}>Ответы кандидата</label>
-            <textarea className={styles.formTextarea} value={answers} onChange={(e) => setAnswers(e.target.value)} rows={4} />
-          </div>
-          {showRejection && (
-            <div className={styles.formField}>
-              <label className={styles.formLabel}>Причина отказа</label>
-              <select className={styles.formSelect} value={rejectionId} onChange={(e) => setRejectionId(Number(e.target.value))}>
-                <option value={0}>— Выберите —</option>
-                {rejectionReasons.map((r) => (
-                  <option key={r.rejection_reason_id} value={r.rejection_reason_id}>{r.name}</option>
-                ))}
-              </select>
+
+      {/* Toolbar */}
+      <div className={styles.formToolbar}>
+        <button className={styles.btnSave} onClick={handleSave}>Сохранить запись</button>
+        <div className={styles.toolbarRight}>
+          <button className={styles.btnApprove} onClick={handleApprove}>Одобрить кандидата</button>
+          <button className={styles.btnReject} onClick={() => setShowRejectModal(true)}>Отклонить кандидата</button>
+        </div>
+      </div>
+
+      {/* Auto fields */}
+      <div className={styles.autoFields}>
+        <div className={styles.autoRow}>
+          <span className={styles.autoLabel}>ФИО кандидата</span>
+          <span className={styles.autoValue}>{candidateName}</span>
+          <span className={styles.autoLabel} style={{ marginLeft: '3rem' }}>Должность</span>
+          <span className={styles.autoValue}>{positionName}</span>
+          <span className={styles.autoLabel} style={{ marginLeft: '3rem' }}>Менеджер по подбору</span>
+          <span className={styles.autoValue}>{managerName}</span>
+        </div>
+        <div className={styles.autoRow}>
+          <span className={styles.autoLabel}>Дата и время начала</span>
+          <input
+            type="datetime-local"
+            className={styles.fieldRowInput}
+            value={scheduledAt}
+            onChange={(e) => setScheduledAt(e.target.value)}
+            style={{ flex: 'none', width: 220 }}
+          />
+        </div>
+      </div>
+
+      {/* Three column textarea grid */}
+      <div className={styles.threeColGrid}>
+        <div className={styles.interviewBlock}>
+          <span className={styles.interviewBlockLabel}>Вопросы</span>
+          <textarea
+            className={styles.interviewTextarea}
+            placeholder="Вопросы"
+            value={questions}
+            onChange={(e) => setQuestions(e.target.value)}
+          />
+        </div>
+        <div className={styles.interviewBlock}>
+          <span className={styles.interviewBlockLabel}>Ответы кандидата</span>
+          <textarea
+            className={styles.interviewTextarea}
+            placeholder="Ответы кандидата"
+            value={answers}
+            onChange={(e) => setAnswers(e.target.value)}
+          />
+        </div>
+        <div className={styles.interviewBlock}>
+          <span className={styles.interviewBlockLabel}>Оценка кандидата</span>
+          <textarea
+            className={styles.interviewTextarea}
+            placeholder="Оценка кандидата"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Reject modal */}
+      {showRejectModal && (
+        <div className={styles.modalBackdrop}>
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <span className={styles.modalTitle}>Отклонить кандидата</span>
+              <button className={styles.modalClose} onClick={() => setShowRejectModal(false)}>✕</button>
             </div>
-          )}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <div className={styles.modalField}>
+                <label className={styles.modalLabel}>Причина отказа</label>
+                <select
+                  className={styles.modalSelect}
+                  value={rejectionId}
+                  onChange={(e) => setRejectionId(Number(e.target.value))}
+                >
+                  {rejectionReasons.map((r) => (
+                    <option key={r.rejection_reason_id} value={r.rejection_reason_id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className={styles.modalActions}>
+              <button className={styles.btnReject} onClick={handleRejectConfirm}>Подтвердить отказ</button>
+            </div>
+          </div>
         </div>
-        <div className={styles.formActions}>
-          <button className={styles.btnSuccess} onClick={handleSuccess}>Завершить успешно</button>
-          <button className={styles.btnDanger} onClick={handleReject}>Кандидат не подходит</button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

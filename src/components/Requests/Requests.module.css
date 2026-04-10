@@ -125,6 +125,63 @@
 .modalSelect { border: 1px solid var(--beige-200); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.875rem; font-family: inherit; outline: none; width: 100%; }
 .modalActions { display: flex; justify-content: center; }
 
+/* Security / Medical check form layout */
+.twoColLayout { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 1.5rem; }
+.subSectionLabel { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin: 1.75rem 0 1rem; }
+.formFieldRow { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.25rem; }
+.formFieldRowLabel { font-size: 0.8rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.04em; }
+.formFieldRowInput {
+  border: none; border-bottom: 1px solid var(--text-dark); padding: 0.25rem 0;
+  font-size: 0.875rem; font-family: inherit; outline: none; background: transparent; width: 100%;
+}
+.formFieldRowDate {
+  border: none; border-bottom: 1px solid var(--text-dark); padding: 0.25rem 0;
+  font-size: 0.875rem; font-family: inherit; outline: none; background: transparent;
+}
+.checklistSection { margin-top: 2rem; }
+.checklistGrid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 3rem; margin-bottom: 1.5rem; }
+.checklistItem { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; }
+.checklistItemLabel { font-size: 0.875rem; font-weight: 700; color: var(--text-dark); white-space: nowrap; min-width: 160px; }
+.radioGroup { display: flex; gap: 1.25rem; align-items: center; }
+.radioOption { display: flex; align-items: center; gap: 0.35rem; font-size: 0.875rem; font-weight: 500; color: var(--text-dark); cursor: pointer; }
+.radioOption input[type="radio"] { cursor: pointer; accent-color: var(--red-600); }
+.btnApply {
+  background: var(--beige-200); border: none; padding: 0.45rem 1.1rem;
+  font-weight: 700; font-size: 0.8rem; cursor: pointer; font-family: inherit;
+  color: var(--text-dark); white-space: nowrap; transition: background 0.15s;
+}
+.btnApply:hover { background: var(--beige-300); }
+.iconLinkBtn {
+  display: inline-flex; align-items: center; gap: 0.5rem; background: none; border: none;
+  cursor: pointer; color: var(--text-dark); font-size: 0.875rem; font-weight: 600;
+  font-family: inherit; padding: 0; text-decoration: none;
+}
+.iconLinkBtn:hover { color: var(--red-600); }
+
+/* Interview form layout */
+.toolbarRight { display: flex; gap: 1rem; margin-left: auto; }
+.threeColGrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+.interviewBlock { display: flex; flex-direction: column; gap: 0.5rem; }
+.interviewBlockLabel { font-size: 0.875rem; font-weight: 700; color: var(--text-dark); }
+.interviewTextarea {
+  border: 1px solid var(--text-dark); background: var(--white); padding: 0.75rem;
+  font-size: 0.8125rem; font-family: inherit; resize: vertical; outline: none;
+  width: 100%; min-height: 320px; box-sizing: border-box;
+}
+.fullColGrid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
+.btnApprove {
+  background: var(--beige-200); border: none; padding: 0.6rem 1.25rem;
+  font-weight: 700; cursor: pointer; font-family: inherit; color: var(--text-dark);
+  text-decoration: none; display: inline-block; transition: background 0.15s;
+}
+.btnApprove:hover { background: #c5e8d4; }
+.btnReject {
+  background: var(--red-200); border: none; padding: 0.6rem 1.25rem;
+  font-weight: 700; cursor: pointer; font-family: inherit; color: var(--red-900);
+  text-decoration: none; display: inline-block; transition: background 0.15s;
+}
+.btnReject:hover { background: var(--red-400); }
+
 /* Status Badges */
 .badge {
   display: inline-block;
