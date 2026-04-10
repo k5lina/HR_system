@@ -25,7 +25,7 @@ export default function SecurityCheckForm() {
   const [passportNumber, setPassportNumber] = useState(existing?.passport_number ?? '');
   const [passportIssuedAt, setPassportIssuedAt] = useState(existing?.passport_issued_at ?? '');
   const [regAddress, setRegAddress] = useState(existing?.registration_address ?? '');
-  const [reportId, setReportId] = useState(existing?.report_id ?? '');
+  const [reportId, setReportId] = useState<number | undefined>(existing?.report_id);
   const [startedAt, setStartedAt] = useState(existing?.created_at ?? '');
   const [result, setResult] = useState<boolean | undefined>(existing?.result);
 
@@ -94,6 +94,7 @@ export default function SecurityCheckForm() {
     setStartedAt(now);
     persist({ ...buildRecord(result, false), report_id: mockId, created_at: now });
   }
+
 
   function handleApprove() {
     persist(buildRecord(true, true));

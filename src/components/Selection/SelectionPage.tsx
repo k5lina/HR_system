@@ -41,16 +41,16 @@ export default function SelectionPage() {
   const stages: StageDef[] = useMemo(() => {
     if (roleId === 3) {
       return [
-        { kind: 'main',     label: 'Собеседования с руководителем' },
+        { kind: 'main', label: 'Собеседования с руководителем' },
         { kind: 'suitable', label: 'Подходящие кандидаты' },
       ];
     }
     return [
-      { kind: 'phone',    label: 'Телефонные интервью' },
-      { kind: 'main',     label: 'Собеседования с руководителем' },
+      { kind: 'phone', label: 'Телефонные интервью' },
+      { kind: 'main', label: 'Собеседования с руководителем' },
       { kind: 'security', label: 'Проверка в СБ' },
-      { kind: 'medical',  label: 'Медицинские проверки' },
-      { kind: 'offer',    label: 'Предложения о трудоустройстве' },
+      { kind: 'medical', label: 'Медицинские проверки' },
+      { kind: 'offer', label: 'Предложения о трудоустройстве' },
     ];
   }, [roleId]);
 
@@ -331,9 +331,8 @@ export default function SelectionPage() {
         </div>
       )}
 
-      {/* Search */}
       <div className={styles.topActions}>
-        <div />
+        <h3 className={styles.subTitle}>Кандидаты</h3>
         <div className={styles.searchBox}>
           <input
             className={styles.searchInput}
@@ -342,18 +341,14 @@ export default function SelectionPage() {
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
           {search && (
-            <button
-              style={{ border: 'none', background: 'none', cursor: 'pointer' }}
-              onClick={() => { setSearch(''); setPage(1); }}
-            >
+            <button style={{ border: 'none', background: 'none', cursor: 'pointer' }} onClick={() => { setSearch(''); setPage(1); }}>
               ×
             </button>
           )}
         </div>
       </div>
 
-      {/* Candidates label */}
-      <div className={styles.sectionLabel}>Кандидаты</div>
+
 
       {/* Table */}
       <div className={styles.tableWrap}>
@@ -382,9 +377,9 @@ export default function SelectionPage() {
                     <td>
                       {row.date
                         ? new Date(row.date).toLocaleString('ru-RU', {
-                            day: '2-digit', month: '2-digit', year: 'numeric',
-                            hour: '2-digit', minute: '2-digit',
-                          })
+                          day: '2-digit', month: '2-digit', year: 'numeric',
+                          hour: '2-digit', minute: '2-digit',
+                        })
                         : '—'}
                     </td>
                   )}

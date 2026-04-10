@@ -194,7 +194,7 @@ export interface Interview {
 
 export interface SecurityCheck {
   security_check_id: number;
-  report_id?: string;
+  report_id?: number;
   created_at: string;
   finished_at?: string;
   passport_series?: string;

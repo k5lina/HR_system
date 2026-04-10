@@ -16,6 +16,23 @@ import {
   initialSecurityChecks, initialMedicalChecks, initialJobOffers,
 } from '../data/initialData';
 
+/**
+ * Версия данных. Меняй эту строку каждый раз, когда обновляешь initialData.ts —
+ * при несовпадении все hr_* ключи в localStorage будут очищены и пересеяны из initialData.
+ */
+const DATA_VERSION = 'v5';
+
+// Выполняется один раз при загрузке модуля (до React-рендера).
+// Если версия изменилась — очищаем все hr_* ключи, чтобы usePersisted взял свежий initialData.
+(function seedCheck() {
+  if (localStorage.getItem('hr_seed_version') !== DATA_VERSION) {
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith('hr_'))
+      .forEach((k) => localStorage.removeItem(k));
+    localStorage.setItem('hr_seed_version', DATA_VERSION);
+  }
+})();
+
 function loadOrInit<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);

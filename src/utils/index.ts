@@ -64,8 +64,8 @@ export function calcRefusalShareByReason(
   return shares;
 }
 
-export function generateMockSpectrumId(): string {
-  return 'SP-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+export function generateMockSpectrumId(): number {
+  return Math.floor(100_000_000 + Math.random() * 900_000_000);
 }
 
 export function formatDate(iso: string): string {
