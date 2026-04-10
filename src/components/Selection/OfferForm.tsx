@@ -118,25 +118,31 @@ export default function OfferForm() {
         </div>
       </div>
 
-      {/* Auto fields — row 1 */}
-      <div className={styles.autoFields}>
-        <div className={styles.autoRow}>
-          <span className={styles.autoLabel}>Дата создания</span>
-          <span className={styles.autoValue}>{createdAt}</span>
-          <span className={styles.autoLabel} style={{ marginLeft: '3rem' }}>Отдел</span>
-          <span className={styles.autoValue}>{deptName}</span>
-          <span className={styles.autoLabel} style={{ marginLeft: '3rem' }}>Должность</span>
-          <span className={styles.autoValue}>{positionName}</span>
+      {/* Fields grid — 3 columns, 3 rows */}
+      <div className={styles.fieldsGrid3}>
+        {/* Row 1 */}
+        <div className={styles.gridField}>
+          <span className={styles.gridFieldLabel}>Дата создания</span>
+          <span className={styles.gridFieldValue}>{createdAt}</span>
+        </div>
+        <div className={styles.gridField}>
+          <span className={styles.gridFieldLabel}>Отдел</span>
+          <span className={styles.gridFieldValue}>{deptName}</span>
+        </div>
+        <div className={styles.gridField}>
+          <span className={styles.gridFieldLabel}>Должность</span>
+          <span className={styles.gridFieldValue}>{positionName}</span>
         </div>
 
         {/* Row 2 */}
-        <div className={styles.autoRow} style={{ alignItems: 'center' }}>
-          <span className={styles.autoLabel}>ФИО кандидата</span>
-          <span className={styles.autoValue}>{candidateName}</span>
-          <span className={styles.autoLabel} style={{ marginLeft: '3rem' }}>Тип трудового договора</span>
+        <div className={styles.gridField}>
+          <span className={styles.gridFieldLabel}>ФИО кандидата</span>
+          <span className={styles.gridFieldValue}>{candidateName}</span>
+        </div>
+        <div className={styles.gridField}>
+          <span className={styles.gridFieldLabel}>Тип трудового договора</span>
           <select
-            className={styles.fieldRowSelect}
-            style={{ marginLeft: '0.5rem', minWidth: 200, flex: 'none' }}
+            className={styles.gridFieldSelect}
             value={contractTypeId}
             onChange={(e) => setContractTypeId(Number(e.target.value))}
           >
@@ -144,31 +150,35 @@ export default function OfferForm() {
               <option key={ct.contract_type_id} value={ct.contract_type_id}>{ct.name}</option>
             ))}
           </select>
-          <span className={styles.autoLabel} style={{ marginLeft: '3rem' }}>Руководитель</span>
-          <span className={styles.autoValue}>{headName}</span>
+        </div>
+        <div className={styles.gridField}>
+          <span className={styles.gridFieldLabel}>Руководитель</span>
+          <span className={styles.gridFieldValue}>{headName}</span>
         </div>
 
         {/* Row 3 */}
-        <div className={styles.autoRow} style={{ alignItems: 'center' }}>
-          <span className={styles.autoLabel}>Предложенная зарплата (руб.)</span>
+        <div className={styles.gridField}>
+          <span className={styles.gridFieldLabel}>Предложенная зарплата (руб.)</span>
           <input
             type="number"
-            className={styles.fieldRowInput}
-            style={{ flex: 'none', width: 180 }}
+            className={styles.gridFieldInput}
             value={proposedSalary}
             onChange={(e) => setProposedSalary(e.target.value)}
             placeholder="0"
           />
-          <span className={styles.autoLabel} style={{ marginLeft: '3rem' }}>Дата выхода на работу</span>
+        </div>
+        <div className={styles.gridField}>
+          <span className={styles.gridFieldLabel}>Дата выхода на работу</span>
           <input
             type="date"
-            className={styles.fieldRowInput}
-            style={{ flex: 'none', width: 180 }}
+            className={styles.gridFieldInput}
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
-          <span className={styles.autoLabel} style={{ marginLeft: '3rem' }}>График работы</span>
-          <span className={styles.autoValue}>{vacancy?.work_schedule ?? '—'}</span>
+        </div>
+        <div className={styles.gridField}>
+          <span className={styles.gridFieldLabel}>График работы</span>
+          <span className={styles.gridFieldValue}>{vacancy?.work_schedule ?? '—'}</span>
         </div>
       </div>
 

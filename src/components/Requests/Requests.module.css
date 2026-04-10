@@ -125,6 +125,61 @@
 .modalSelect { border: 1px solid var(--beige-200); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.875rem; font-family: inherit; outline: none; width: 100%; }
 .modalActions { display: flex; justify-content: center; }
 
+/* Offer / generic 3-column field grid */
+.fieldsGrid3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.5rem 3rem;
+  margin-bottom: 2.5rem;
+}
+.fieldsGrid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem 3rem;
+  margin-bottom: 2.5rem;
+}
+.gridField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.gridFieldLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-light);
+}
+.gridFieldValue {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  border-bottom: 1px solid var(--beige-200);
+  padding-bottom: 4px;
+  min-height: 1.5rem;
+}
+.gridFieldInput {
+  border: none;
+  border-bottom: 1px solid var(--text-dark);
+  padding: 0.2rem 0;
+  font-size: 0.875rem;
+  font-family: inherit;
+  outline: none;
+  background: transparent;
+  width: 100%;
+}
+.gridFieldSelect {
+  border: none;
+  border-bottom: 1px solid var(--text-dark);
+  padding: 0.2rem 0;
+  font-size: 0.875rem;
+  font-family: inherit;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  cursor: pointer;
+}
+
 /* Security / Medical check form layout */
 .twoColLayout { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 1.5rem; }
 .subSectionLabel { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin: 1.75rem 0 1rem; }
