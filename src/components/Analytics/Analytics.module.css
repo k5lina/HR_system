@@ -1,62 +1,220 @@
-.title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #e6edf3;
-  margin: 0 0 1.5rem;
+/* ── Hub ─────────────────────────────────────────────────── */
+.hubGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
 }
 
-.filterRow {
+.hubCard {
+  background: var(--white);
+  border: 1.5px solid var(--beige-200);
+  border-radius: var(--radius-md);
+  padding: 2rem 1.5rem;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.hubCard:hover {
+  border-color: var(--red-400);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.hubIcon {
+  width: 40px;
+  height: 40px;
+  background: var(--beige-100);
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: center;
+  color: var(--text-dark);
+}
+
+.hubCardTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.hubCardDesc {
+  font-size: 0.8125rem;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+/* ── Report common ───────────────────────────────────────── */
+.reportMeta {
+  display: flex;
+  gap: 4rem;
+  margin-bottom: 2rem;
+}
+
+.reportMetaField {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.reportMetaLabel {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  white-space: nowrap;
+}
+
+.reportMetaValue {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  border-bottom: 1px solid var(--text-dark);
+  padding-bottom: 2px;
+  min-width: 140px;
+}
+
+.filtersGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2.5rem;
+  align-items: flex-end;
   margin-bottom: 1.5rem;
 }
 
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
 .filterLabel {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-light);
 }
 
 .filterSelect {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.5rem;
-  padding: 0.5rem 0.875rem;
-  color: #e6edf3;
-  font-size: 0.875rem;
+  border: 1px solid var(--beige-200);
+  border-radius: 6px;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8125rem;
+  font-family: inherit;
   outline: none;
+  background: var(--white);
+  color: var(--text-dark);
+  min-width: 160px;
 }
 
-.filterSelect option {
-  background: #1a1f36;
+.filterDateInput {
+  border: none;
+  border-bottom: 1px solid var(--text-dark);
+  padding: 0.25rem 0;
+  font-size: 0.8125rem;
+  font-family: inherit;
+  outline: none;
+  background: transparent;
+  width: 150px;
 }
 
-.grid {
+.chartSection {
+  background: var(--white);
+  border: 1.5px solid var(--beige-200);
+  border-radius: var(--radius-md);
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.chartTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 1.25rem;
+}
+
+/* ── Funnel chart ────────────────────────────────────────── */
+.funnelTable {
+  width: 100%;
+}
+
+.funnelHeader {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
+  grid-template-columns: 180px 1fr 110px 130px 140px;
+  gap: 0;
+  padding: 0 0 0.5rem;
+  border-bottom: 1.5px solid var(--beige-200);
+  margin-bottom: 0.25rem;
 }
 
-.card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 1rem;
-  padding: 1.5rem;
+.funnelHeaderCell {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-light);
+  text-align: right;
 }
 
-.cardFull {
-  grid-column: 1 / -1;
+.funnelHeaderCell:first-child { text-align: left; }
+.funnelHeaderCell:nth-child(2) { text-align: left; }
+
+.funnelRow {
+  display: grid;
+  grid-template-columns: 180px 1fr 110px 130px 140px;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--beige-100);
 }
 
-.cardTitle {
+.funnelRowLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.funnelBarWrap {
+  padding: 0 1.5rem 0 0;
+}
+
+.funnelBar {
+  height: 28px;
+  background: linear-gradient(90deg, #b0b4f0 0%, #9496e0 100%);
+  border-radius: 2px;
+  min-width: 4px;
+  transition: width 0.4s ease;
+}
+
+.funnelCell {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-align: right;
+  padding-right: 1rem;
+}
+
+/* ── Time report ─────────────────────────────────────────── */
+.statBox {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.statNumber {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  letter-spacing: -0.03em;
+}
+
+.statUnit {
   font-size: 1rem;
   font-weight: 600;
-  color: #e6edf3;
-  margin: 0 0 1rem;
-}
-
-.empty {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.3);
-  padding: 2rem;
+  color: var(--text-light);
 }

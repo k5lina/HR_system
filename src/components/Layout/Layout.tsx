@@ -18,7 +18,10 @@ const PAGE_TITLES: Record<string, string> = {
   '/requests':    'Заявки на подбор персонала',
   '/vacancies':   'Вакансии',
   '/selection':   'Отбор кандидатов',
-  '/analytics':   'Аналитика',
+  '/analytics/funnel':  'Аналитика',
+  '/analytics/time':    'Аналитика',
+  '/analytics/reasons': 'Аналитика',
+  '/analytics':         'Аналитика',
   '/directories': 'Справочники',
 };
 

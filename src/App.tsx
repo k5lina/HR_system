@@ -16,6 +16,9 @@ import MedicalCheckForm from './components/Selection/MedicalCheckForm';
 import OfferForm from './components/Selection/OfferForm';
 import SelectionPage from './components/Selection/SelectionPage';
 import AnalyticsPage from './components/Analytics/AnalyticsPage';
+import FunnelReport from './components/Analytics/FunnelReport';
+import TimeReport from './components/Analytics/TimeReport';
+import ReasonsReport from './components/Analytics/ReasonsReport';
 import DirectoriesPage from './components/Directories/DirectoriesPage';
 import HomePage from './components/Home/HomePage';
 
@@ -51,6 +54,9 @@ function AppRoutes() {
         <Route path="selection/:candidateId/medical-check" element={<PrivateRoute allowedRoles={[1, 2]}><MedicalCheckForm /></PrivateRoute>} />
         <Route path="selection/:candidateId/offer" element={<PrivateRoute allowedRoles={[1, 2]}><OfferForm /></PrivateRoute>} />
         <Route path="analytics" element={<PrivateRoute allowedRoles={[1, 2, 3]}><AnalyticsPage /></PrivateRoute>} />
+        <Route path="analytics/funnel" element={<PrivateRoute allowedRoles={[1, 2, 3]}><FunnelReport /></PrivateRoute>} />
+        <Route path="analytics/time" element={<PrivateRoute allowedRoles={[1, 2, 3]}><TimeReport /></PrivateRoute>} />
+        <Route path="analytics/reasons" element={<PrivateRoute allowedRoles={[1, 2, 3]}><ReasonsReport /></PrivateRoute>} />
         <Route path="directories" element={<PrivateRoute allowedRoles={[1]}><DirectoriesPage /></PrivateRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/requests" replace />} />

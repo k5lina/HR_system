@@ -408,4 +408,16 @@ export const initialMedicalChecks: MedicalCheck[] = [
     medical_check_status_id: 4,
   },
 ];
-export const initialJobOffers: JobOffer[] = [];
+export const initialJobOffers: JobOffer[] = [
+  {
+    offer_id: 5,
+    created_at: '2024-02-14T10:00:00',
+    finished_at: '2024-02-16T14:00:00',
+    proposed_salary: 75000,
+    start_date: '2024-03-01',
+    notes: 'Кандидат принял предложение.',
+    candidate_id: 2,
+    contract_type_id: 2,
+    offer_status_id: 2,
+  },
+];
