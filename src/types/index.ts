@@ -131,6 +131,8 @@ export interface Vacancy {
   updated_at: string;
   salary_info: string;
   work_conditions: string;
+  experience?: number;
+  employment_type_id?: number;
   request_id: number;
   vacancy_status_id: number;
   user_id: number;
