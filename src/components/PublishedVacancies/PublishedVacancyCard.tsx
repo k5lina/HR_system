@@ -166,7 +166,10 @@ export default function PublishedVacancyCard() {
             <path d="M19 12H5M12 19L5 12l7-7" />
           </svg>
         </Link>
-        <h2 className={styles.title}>{vacancyTitle}</h2>
+        <div>
+          <span className={styles.pageLabel}>Опубликованная вакансия</span>
+          <h2 className={styles.title}>{vacancyTitle}</h2>
+        </div>
       </div>
 
       {/* Stage tabs */}
