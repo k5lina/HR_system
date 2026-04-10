@@ -47,7 +47,7 @@ export default function PublishedVacancyList() {
                   </span>
                 </td>
                 <td>
-                  <Link to={`/published/${p.publication_id}`} className={styles.linkBtn}>Открыть</Link>
+                  <Link to={`/published/${p.vacancy_id}`} className={styles.linkBtn}>Открыть</Link>
                 </td>
               </tr>
             ))}

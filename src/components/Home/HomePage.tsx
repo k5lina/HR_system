@@ -18,25 +18,37 @@ export default function HomePage() {
 
   const activePubs = publications.filter((p) => p.is_active);
 
+  // Aggregate: one row per vacancy (group all channels into one)
+  const activeVacancies = useMemo(() => {
+    const seen = new Set<number>();
+    const rows: typeof vacancies[number][] = [];
+    activePubs.forEach((p) => {
+      if (!seen.has(p.vacancy_id)) {
+        seen.add(p.vacancy_id);
+        const vac = vacancies.find((v) => v.vacancy_id === p.vacancy_id);
+        if (vac) rows.push(vac);
+      }
+    });
+    return rows;
+  }, [activePubs, vacancies]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return activePubs.filter((p) => {
-      const vac = vacancies.find((v) => v.vacancy_id === p.vacancy_id);
-      const ch  = searchChannels.find((c) => c.channel_id === p.channel_id);
-      const req = vac ? requests.find((r) => r.request_id === vac.request_id) : null;
+    if (!q) return activeVacancies;
+    return activeVacancies.filter((vac) => {
+      const req = requests.find((r) => r.request_id === vac.request_id);
       const dp  = req ? departmentPositions.find((d) => d.department_position_id === req.department_position_id) : null;
       const dept = dp ? departments.find((d) => d.department_id === dp.department_id)?.name ?? '' : '';
-      const pos  = dp ? positions.find((pos) => pos.position_id === dp.position_id)?.name ?? '' : '';
-      return !q || dept.toLowerCase().includes(q) || pos.toLowerCase().includes(q) || (ch?.name.toLowerCase().includes(q) ?? false);
+      const pos  = dp ? positions.find((p) => p.position_id === dp.position_id)?.name ?? '' : '';
+      return dept.toLowerCase().includes(q) || pos.toLowerCase().includes(q) || vac.title.toLowerCase().includes(q);
     });
-  }, [activePubs, search, vacancies, requests, departmentPositions, departments, positions, searchChannels]);
+  }, [activeVacancies, search, requests, departmentPositions, departments, positions]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  function getVacancyInfo(publicationId: number) {
-    const pub = publications.find((p) => p.publication_id === publicationId);
-    const vac = pub ? vacancies.find((v) => v.vacancy_id === pub.vacancy_id) : null;
+  function getVacancyInfo(vacancyId: number) {
+    const vac = vacancies.find((v) => v.vacancy_id === vacancyId);
     const req = vac ? requests.find((r) => r.request_id === vac.request_id) : null;
     const dp  = req ? departmentPositions.find((d) => d.department_position_id === req.department_position_id) : null;
     const dept = dp ? departments.find((d) => d.department_id === dp.department_id)?.name ?? '—' : '—';
@@ -44,10 +56,17 @@ export default function HomePage() {
     return { dept, pos };
   }
 
-  function getPubStatus(pub: typeof publications[0]) {
-    const vac = vacancies.find((v) => v.vacancy_id === pub.vacancy_id);
-    const st = vac ? vacancyStatuses.find((s) => s.vacancy_status_id === vac.vacancy_status_id) : null;
-    return st?.name ?? (pub.is_active ? 'Активна' : 'Снята');
+  function getVacancyStatus(vacancyId: number) {
+    const vac = vacancies.find((v) => v.vacancy_id === vacancyId);
+    return vacancyStatuses.find((s) => s.vacancy_status_id === vac?.vacancy_status_id)?.name ?? 'Активна';
+  }
+
+  function getFirstPubDate(vacancyId: number) {
+    const dates = activePubs
+      .filter((p) => p.vacancy_id === vacancyId)
+      .map((p) => p.published_at)
+      .sort();
+    return dates[0] ? new Date(dates[0]).toLocaleDateString('ru-RU') : '—';
   }
 
   function renderPagination() {
@@ -136,23 +155,24 @@ export default function HomePage() {
               </tr>
             </thead>
             <tbody>
-              {paginated.map((pub, idx) => {
-                const { dept, pos } = getVacancyInfo(pub.publication_id);
-                const statusName = getPubStatus(pub);
+              {paginated.map((vac, idx) => {
+                const { dept, pos } = getVacancyInfo(vac.vacancy_id);
+                const statusName = getVacancyStatus(vac.vacancy_id);
+                const pubDate = getFirstPubDate(vac.vacancy_id);
                 return (
-                  <tr key={pub.publication_id}>
+                  <tr key={vac.vacancy_id}>
                     <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
-                    <td>{pos}</td>
+                    <td>{pos || vac.title}</td>
                     <td>{dept}</td>
-                    <td>{new Date(pub.published_at).toLocaleDateString('ru-RU')}</td>
+                    <td>{pubDate}</td>
                     <td>
-                      <span className={`${styles.badge} ${pub.is_active ? styles.badgeActive : styles.badgeInactive}`}>
+                      <span className={`${styles.badge} ${styles.badgeActive}`}>
                         {statusName}
                       </span>
                     </td>
                     <td>
                       <div className={styles.actionsCell}>
-                        <Link to={`/published/${pub.publication_id}`} className={styles.actionBtn} title="Открыть">
+                        <Link to={`/published/${vac.vacancy_id}`} className={styles.actionBtn} title="Открыть">
                           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                             <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                           </svg>

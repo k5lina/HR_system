@@ -87,6 +87,27 @@
 .bottomLabel { font-size: 0.875rem; font-weight: 700; color: var(--text-dark); margin-right: 1rem; white-space: nowrap; }
 .bottomInput { flex: 1; border: none; border-bottom: 1px solid var(--text-dark); background: transparent; outline: none; font-size: 0.875rem; padding: 0.2rem 0; }
 
+/* Stage tabs */
+.stageTabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.stageTab {
+  background: var(--beige-100); border: 1.5px solid var(--beige-200);
+  border-radius: var(--radius-sm); padding: 0.6rem 1.25rem;
+  font-size: 0.875rem; font-weight: 600; color: var(--text-dark);
+  cursor: pointer; transition: background 0.15s; font-family: inherit;
+}
+.stageTab:hover { background: var(--beige-200); }
+.stageTabActive { background: var(--red-200); border-color: var(--red-400); color: var(--red-900); }
+
+/* Sub-title inside section */
+.subTitle { font-size: 1.25rem; font-weight: 700; color: var(--text-dark); }
+
+/* Pagination */
+.pagination { display: flex; gap: 0.35rem; align-items: center; margin-top: 1rem; }
+.pageBtn { background: var(--beige-100); border: 1.5px solid var(--beige-200); border-radius: var(--radius-sm); padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+.pageBtn:hover { background: var(--beige-200); }
+.pageBtnActive { background: var(--red-900); color: var(--white); border-color: var(--red-900); }
+.pageDots { padding: 0.35rem 0.25rem; font-size: 0.8rem; color: var(--text-light); }
+
 /* Section label */
 .sectionLabel { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin: 2rem 0 1.25rem; border-bottom: 2px solid var(--beige-200); padding-bottom: 0.5rem; }
 
