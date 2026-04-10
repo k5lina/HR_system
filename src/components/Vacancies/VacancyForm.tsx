@@ -14,7 +14,7 @@ export default function VacancyForm() {
     currentUser, users,
   } = useApp();
 
-  const isNew = id === 'new';
+  const isNew = !id || id === 'new';
   const requestId = searchParams.get('requestId') ? Number(searchParams.get('requestId')) : undefined;
   const sourceRequest = requestId ? requests.find((r) => r.request_id === requestId) : undefined;
   const existing = isNew ? null : vacancies.find((v) => v.vacancy_id === Number(id));
