@@ -40,6 +40,22 @@
   background: var(--beige-50);
   border-bottom: 1.5px solid var(--beige-200);
 }
+
+.thSortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.thSortable:hover { color: var(--text-dark); }
+
+.thSortIcon {
+  display: inline-block;
+  margin-left: 0.3rem;
+  font-size: 0.65rem;
+  opacity: 0.6;
+}
+.thSortActive { color: var(--text-dark); }
+.thSortActive .thSortIcon { opacity: 1; color: var(--red-400); }
 .table td {
   padding: 0.875rem 1.25rem;
   font-size: 0.8125rem;
@@ -251,3 +267,10 @@
 .statusRejected { background: #FDF0F0; color: var(--red-600); border: 1px solid var(--red-200); }
 .statusWork { background: #EBF4FF; color: #1A56DB; border: 1px solid #A4CAFE; }
 .statusNew { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+
+/* Resume analysis status badges */
+.statusExcellent { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+.statusGood      { background: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD; }
+.statusPartial   { background: #FEE2E2; color: #9D174D; border: 1px solid #FCA5A5; }
+.statusManual    { background: #FFF7ED; color: #C2410C; border: 1px solid #FDBA74; }
+.statusNotFit    { background: #F3F4F6; color: #6B7280; border: 1px solid #D1D5DB; }

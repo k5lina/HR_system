@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
+import { fmtRequestId } from '../../utils';
 import styles from './Requests.module.css';
 
 const PAGE_SIZE = 10;
@@ -9,6 +10,7 @@ export default function RequestList() {
   const { requests, setRequests, requestStatuses, departmentPositions, departments, positions, currentUser, employmentTypes } = useApp();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
 
   const visibleRequests = currentUser?.role_id === 3
     ? requests.filter((r) => r.user_id === currentUser.user_id)
@@ -16,13 +18,18 @@ export default function RequestList() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return visibleRequests.filter((req) => {
-      const dp = departmentPositions.find((d) => d.department_position_id === req.department_position_id);
-      const dept = departments.find((d) => d.department_id === dp?.department_id)?.name ?? '';
-      const pos = positions.find((p) => p.position_id === dp?.position_id)?.name ?? '';
-      return !q || dept.toLowerCase().includes(q) || pos.toLowerCase().includes(q);
-    });
-  }, [visibleRequests, search, departmentPositions, departments, positions]);
+    return [...visibleRequests]
+      .sort((a, b) => {
+        const diff = new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return sortDir === 'desc' ? diff : -diff;
+      })
+      .filter((req) => {
+        const dp = departmentPositions.find((d) => d.department_position_id === req.department_position_id);
+        const dept = departments.find((d) => d.department_id === dp?.department_id)?.name ?? '';
+        const pos = positions.find((p) => p.position_id === dp?.position_id)?.name ?? '';
+        return !q || dept.toLowerCase().includes(q) || pos.toLowerCase().includes(q);
+      });
+  }, [visibleRequests, search, sortDir, departmentPositions, departments, positions]);
 
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -64,10 +71,17 @@ export default function RequestList() {
           <thead>
             <tr>
               <th>№</th>
+              <th>ID заявки</th>
               <th>Должность</th>
               <th>Отдел</th>
               <th>Тип занятости</th>
-              <th>Дата создания</th>
+              <th
+                className={`${styles.thSortable} ${styles.thSortActive}`}
+                onClick={() => { setSortDir((d) => d === 'desc' ? 'asc' : 'desc'); setPage(1); }}
+              >
+                Дата создания
+                <span className={styles.thSortIcon}>{sortDir === 'desc' ? '▼' : '▲'}</span>
+              </th>
               <th>Статус</th>
               <th style={{width: '70px'}}></th>
             </tr>
@@ -86,6 +100,9 @@ export default function RequestList() {
               return (
                 <tr key={req.request_id}>
                   <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
+                  <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--text-light)' }}>
+                    {fmtRequestId(req.request_id, req.created_at)}
+                  </td>
                   <td>{pos}</td>
                   <td>{dept}</td>
                   <td>{empType}</td>
@@ -113,7 +130,7 @@ export default function RequestList() {
               );
             })}
             {paginated.length === 0 && (
-              <tr><td colSpan={7} className={styles.empty}>Заявок не найдено</td></tr>
+              <tr><td colSpan={8} className={styles.empty}>Заявок не найдено</td></tr>
             )}
           </tbody>
         </table>

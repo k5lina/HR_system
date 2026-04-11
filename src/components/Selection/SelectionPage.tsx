@@ -1,11 +1,15 @@
 import { useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
+import {
+  fmtInterviewId, fmtAnalysisId,
+  fmtSecurityCheckId, fmtMedicalCheckId, fmtOfferId,
+} from '../../utils';
 import styles from '../Requests/Requests.module.css';
 
 const PAGE_SIZE = 10;
 
-type StageKind = 'phone' | 'main' | 'security' | 'medical' | 'offer' | 'suitable';
+type StageKind = 'new' | 'phone' | 'main' | 'security' | 'medical' | 'offer' | 'suitable';
 
 interface StageDef {
   kind: StageKind;
@@ -19,6 +23,7 @@ interface DocRow {
   status: string;
   openRoute: string;
   canDelete: boolean;
+  displayId: string;
 }
 
 export default function SelectionPage() {
@@ -32,6 +37,7 @@ export default function SelectionPage() {
     medicalChecks, setMedicalChecks,
     jobOffers, setJobOffers,
     interviewStatuses, medicalCheckStatuses, offerStatuses,
+    resumeAnalyses, resumeAnalysisStatuses,
   } = useApp();
 
   const roleId = currentUser?.role_id ?? 2;
@@ -62,6 +68,7 @@ export default function SelectionPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [posFilter, setPosFilter] = useState(0); // for 'suitable' tab
+  const [dateSortDir, setDateSortDir] = useState<'desc' | 'asc'>('desc');
 
   // Resolve candidate meta: name, dept, pos (and posId for filtering)
   function getCandidateMeta(candidateId: number) {
@@ -123,8 +130,25 @@ export default function SelectionPage() {
   // Build rows for current stage
   const rows = useMemo((): DocRow[] => {
     switch (activeStage) {
+      case 'new': {
+        const list = candidates.filter((c) => c.stage_id === 1);
+        return list.map((c) => {
+          const analysis = resumeAnalyses.find((a) => a.candidate_id === c.candidate_id);
+          const statusName = analysis
+            ? (resumeAnalysisStatuses.find((s) => s.analysis_status_id === analysis.analysis_status_id)?.name ?? '—')
+            : 'Анализ не начат';
+          return {
+            id: c.candidate_id,
+            candidateId: c.candidate_id,
+            date: analysis?.started_at ?? '',
+            status: statusName,
+            openRoute: `/candidates/${c.candidate_id}`,
+            canDelete: false,
+            displayId: analysis ? fmtAnalysisId(analysis.analysis_id, analysis.started_at) : '—',
+          };
+        });
+      }
       case 'phone': {
-        // HR sees own, admin sees all
         const list = interviews.filter(
           (i) => i.stage_id === 2 && (roleId === 1 || i.user_id === userId),
         );
@@ -132,14 +156,13 @@ export default function SelectionPage() {
           id: i.interview_id,
           candidateId: i.candidate_id,
           date: i.scheduled_at,
-          status:
-            interviewStatuses.find((s) => s.interview_status_id === i.interview_status_id)?.name ?? '—',
+          status: interviewStatuses.find((s) => s.interview_status_id === i.interview_status_id)?.name ?? '—',
           openRoute: `/selection/${i.candidate_id}/phone-interview`,
           canDelete: true,
+          displayId: fmtInterviewId(i.interview_id, i.scheduled_at, 2),
         }));
       }
       case 'main': {
-        // Head sees own; HR and admin see all
         const list = interviews.filter(
           (i) => i.stage_id === 3 && (roleId !== 3 || i.user_id === userId),
         );
@@ -147,10 +170,10 @@ export default function SelectionPage() {
           id: i.interview_id,
           candidateId: i.candidate_id,
           date: i.scheduled_at,
-          status:
-            interviewStatuses.find((s) => s.interview_status_id === i.interview_status_id)?.name ?? '—',
+          status: interviewStatuses.find((s) => s.interview_status_id === i.interview_status_id)?.name ?? '—',
           openRoute: `/selection/${i.candidate_id}/main-interview`,
           canDelete: true,
+          displayId: fmtInterviewId(i.interview_id, i.scheduled_at, 3),
         }));
       }
       case 'security': {
@@ -158,10 +181,10 @@ export default function SelectionPage() {
           id: s.security_check_id,
           candidateId: s.candidate_id,
           date: s.created_at,
-          status:
-            s.result === true ? 'Проверка пройдена' : s.result === false ? 'Не пройдена' : 'В процессе',
+          status: s.result === true ? 'Проверка пройдена' : s.result === false ? 'Не пройдена' : 'В процессе',
           openRoute: `/selection/${s.candidate_id}/security-check`,
           canDelete: true,
+          displayId: fmtSecurityCheckId(s.security_check_id, s.created_at),
         }));
       }
       case 'medical': {
@@ -169,11 +192,10 @@ export default function SelectionPage() {
           id: m.medical_check_id,
           candidateId: m.candidate_id,
           date: m.created_at,
-          status:
-            medicalCheckStatuses.find((s) => s.medical_check_status_id === m.medical_check_status_id)
-              ?.name ?? '—',
+          status: medicalCheckStatuses.find((s) => s.medical_check_status_id === m.medical_check_status_id)?.name ?? '—',
           openRoute: `/selection/${m.candidate_id}/medical-check`,
           canDelete: true,
+          displayId: fmtMedicalCheckId(m.medical_check_id, m.created_at),
         }));
       }
       case 'offer': {
@@ -181,14 +203,13 @@ export default function SelectionPage() {
           id: o.offer_id,
           candidateId: o.candidate_id,
           date: o.created_at,
-          status:
-            offerStatuses.find((s) => s.offer_status_id === o.offer_status_id)?.name ?? '—',
+          status: offerStatuses.find((s) => s.offer_status_id === o.offer_status_id)?.name ?? '—',
           openRoute: `/selection/${o.candidate_id}/offer`,
           canDelete: true,
+          displayId: fmtOfferId(o.offer_id, o.created_at),
         }));
       }
       case 'suitable': {
-        // Candidates at stage 3 belonging to head's departments
         const list = candidates.filter(
           (c) => c.stage_id === 3 && headPubIds.has(c.publication_id),
         );
@@ -199,6 +220,7 @@ export default function SelectionPage() {
           status: '—',
           openRoute: `/selection/${c.candidate_id}/main-interview`,
           canDelete: false,
+          displayId: '—',
         }));
       }
       default:
@@ -207,26 +229,38 @@ export default function SelectionPage() {
   }, [
     activeStage, interviews, securityChecks, medicalChecks, jobOffers, candidates,
     interviewStatuses, medicalCheckStatuses, offerStatuses,
+    resumeAnalyses, resumeAnalysisStatuses,
     roleId, userId, headPubIds,
   ]);
 
-  // Apply search + posFilter
+  const showDateCol = activeStage !== 'suitable' && activeStage !== 'new';
+
+  // Apply search + posFilter + sort
   const filtered = useMemo(() => {
     let result = rows;
     if (activeStage === 'suitable' && posFilter) {
       result = result.filter((row) => getCandidateMeta(row.candidateId).posId === posFilter);
     }
     const q = search.toLowerCase();
-    if (!q) return result;
-    return result.filter((row) => {
-      const m = getCandidateMeta(row.candidateId);
-      return (
-        m.name.toLowerCase().includes(q) ||
-        m.dept.toLowerCase().includes(q) ||
-        m.pos.toLowerCase().includes(q)
-      );
+    if (q) {
+      result = result.filter((row) => {
+        const m = getCandidateMeta(row.candidateId);
+        return (
+          m.name.toLowerCase().includes(q) ||
+          m.dept.toLowerCase().includes(q) ||
+          m.pos.toLowerCase().includes(q)
+        );
+      });
+    }
+    // Sort: by date if date column visible, then by status priority, then by id
+    return [...result].sort((a, b) => {
+      if (showDateCol && a.date && b.date) {
+        const diff = new Date(b.date).getTime() - new Date(a.date).getTime();
+        if (diff !== 0) return dateSortDir === 'desc' ? diff : -diff;
+      }
+      return getStatusPriority(a.status) - getStatusPriority(b.status) || b.id - a.id;
     });
-  }, [rows, search, posFilter, activeStage]);
+  }, [rows, search, posFilter, activeStage, dateSortDir]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -237,6 +271,7 @@ export default function SelectionPage() {
     setPage(1);
     setSearch('');
     setPosFilter(0);
+    setDateSortDir('desc');
   }
 
   function handleDelete(row: DocRow) {
@@ -260,6 +295,13 @@ export default function SelectionPage() {
 
   function getStatusClass(status: string) {
     const s = status.toLowerCase();
+    // Resume analysis statuses (colorful)
+    if (s.includes('отличный')) return styles.statusExcellent;
+    if (s.includes('хороший')) return styles.statusGood;
+    if (s.includes('частично')) return styles.statusPartial;
+    if (s.includes('требует')) return styles.statusManual;
+    if (s === 'не подходит') return styles.statusNotFit;
+    // General statuses
     if (s.includes('успешн') || s.includes('пройден') || s.includes('принят')) return styles.statusDone;
     if (
       s.includes('не подход') || s.includes('не пройден') || s.includes('отменен') ||
@@ -268,6 +310,28 @@ export default function SelectionPage() {
     if (s.includes('в процессе') || s.includes('ожидает') || s.includes('в работе') || s.includes('запланирован'))
       return styles.statusWork;
     return styles.statusNew;
+  }
+
+  // Status sort priority (lower = shown first)
+  function getStatusPriority(status: string): number {
+    const s = status.toLowerCase();
+    // Active states
+    if (s.includes('в процессе') || s.includes('ожидает') || s.includes('в работе') || s.includes('запланирован')) return 1;
+    // Best analysis results
+    if (s.includes('отличный')) return 2;
+    if (s.includes('хороший')) return 3;
+    // General success
+    if (s.includes('успешн') || s.includes('пройден') || s.includes('принят')) return 2;
+    // Partial fit
+    if (s.includes('частично')) return 4;
+    // Requires manual review
+    if (s.includes('требует')) return 5;
+    // Rejection
+    if (
+      s.includes('не подход') || s.includes('не пройден') || s.includes('отменен') ||
+      s.includes('отклон') || s.includes('некорректн') || s === 'не подходит'
+    ) return 6;
+    return 1;
   }
 
   function renderPagination() {
@@ -301,8 +365,7 @@ export default function SelectionPage() {
     );
   }
 
-  const showDateCol = activeStage !== 'suitable';
-  const colSpan = showDateCol ? 7 : 6;
+  const colSpan = showDateCol ? 8 : 7;
 
   return (
     <div className={styles.section}>
@@ -361,10 +424,19 @@ export default function SelectionPage() {
           <thead>
             <tr>
               <th>№</th>
+              <th>ID</th>
               <th>ФИО кандидата</th>
               <th>Отдел</th>
               <th>Должность</th>
-              {showDateCol && <th>Дата и время начала</th>}
+              {showDateCol && (
+                <th
+                  className={`${styles.thSortable} ${styles.thSortActive}`}
+                  onClick={() => { setDateSortDir((d) => d === 'desc' ? 'asc' : 'desc'); setPage(1); }}
+                >
+                  Дата и время начала
+                  <span className={styles.thSortIcon}>{dateSortDir === 'desc' ? '▼' : '▲'}</span>
+                </th>
+              )}
               <th>Статус</th>
               <th style={{ width: '70px' }}></th>
             </tr>
@@ -375,6 +447,9 @@ export default function SelectionPage() {
               return (
                 <tr key={`${activeStage}-${row.id}`}>
                   <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
+                  <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--text-light)' }}>
+                    {row.displayId}
+                  </td>
                   <td>{m.name}</td>
                   <td>{m.dept}</td>
                   <td>{m.pos}</td>

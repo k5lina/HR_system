@@ -11,7 +11,7 @@ import {
   roles, departments, personnelTypes, positions, employmentTypes, contractTypes,
   searchChannels, selectionStages, rejectionReasons, requestStatuses, vacancyStatuses,
   interviewStatuses, resumeAnalysisStatuses, medicalCheckStatuses, offerStatuses,
-  emailTemplates, departmentPositions, initialUsers, initialRequests, initialVacancies,
+  emailTemplates as initialEmailTemplates, departmentPositions, initialUsers, initialRequests, initialVacancies,
   initialPublications, initialCandidates, initialResumeAnalyses, initialInterviews,
   initialSecurityChecks, initialMedicalChecks, initialJobOffers,
 } from '../data/initialData';
@@ -20,7 +20,7 @@ import {
  * Версия данных. Меняй эту строку каждый раз, когда обновляешь initialData.ts —
  * при несовпадении все hr_* ключи в localStorage будут очищены и пересеяны из initialData.
  */
-const DATA_VERSION = 'v5';
+const DATA_VERSION = 'v7';
 
 // Выполняется один раз при загрузке модуля (до React-рендера).
 // Если версия изменилась — очищаем все hr_* ключи, чтобы usePersisted взял свежий initialData.
@@ -67,6 +67,7 @@ interface AppContextValue {
   medicalCheckStatuses: MedicalCheckStatus[];
   offerStatuses: OfferStatus[];
   emailTemplates: EmailTemplate[];
+  setEmailTemplates: React.Dispatch<React.SetStateAction<EmailTemplate[]>>;
   departmentPositions: DepartmentPosition[];
 
   users: User[];
@@ -124,6 +125,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   });
 
+  const [emailTemplates, setEmailTemplates] = usePersisted<EmailTemplate[]>('hr_email_templates', initialEmailTemplates);
   const [users, setUsers] = usePersisted<User[]>('hr_users', initialUsers);
   const [requests, setRequests] = usePersisted<RecruitmentRequest[]>('hr_requests', initialRequests);
   const [vacancies, setVacancies] = usePersisted<Vacancy[]>('hr_vacancies', initialVacancies);
@@ -161,7 +163,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       roles, departments, personnelTypes, positions, employmentTypes, contractTypes,
       searchChannels, selectionStages, rejectionReasons, requestStatuses, vacancyStatuses,
       interviewStatuses, resumeAnalysisStatuses, medicalCheckStatuses, offerStatuses,
-      emailTemplates, departmentPositions,
+      emailTemplates, setEmailTemplates, departmentPositions,
       users, setUsers,
       requests, setRequests,
       vacancies, setVacancies,

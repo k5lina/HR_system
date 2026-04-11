@@ -108,7 +108,7 @@
   outline: none;
   background: var(--white);
   color: var(--text-dark);
-  min-width: 160px;
+  width: 200px;
 }
 
 .filterDateInput {

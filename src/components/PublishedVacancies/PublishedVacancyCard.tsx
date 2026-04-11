@@ -56,15 +56,39 @@ export default function PublishedVacancyCard() {
     return searchChannels.find((ch) => ch.channel_id === pub.channel_id)?.name ?? '—';
   }
 
+  function getStatusPriority(candidateId: number, stageId: number): number {
+    const s = getCandidateStatus(candidateId, stageId).toLowerCase();
+    if (s.includes('отличный')) return 1;
+    if (s.includes('хороший')) return 2;
+    if (s.includes('частично')) return 3;
+    if (s.includes('успешн') || s.includes('пройден') || s.includes('принят')) return 2;
+    if (s.includes('в процессе') || s.includes('ожидает') || s.includes('запланирован')) return 1;
+    if (s.includes('требует')) return 4;
+    if (s.includes('не подход') || s.includes('не пройден') || s.includes('отменен') || s.includes('отклон') || s === 'не подходит') return 5;
+    return 3;
+  }
+
+  function getStatusClass(status: string): string {
+    const s = status.toLowerCase();
+    if (s.includes('отличный')) return styles.statusExcellent;
+    if (s.includes('хороший')) return styles.statusGood;
+    if (s.includes('частично')) return styles.statusPartial;
+    if (s.includes('требует')) return styles.statusManual;
+    if (s === 'не подходит') return styles.statusNotFit;
+    if (s.includes('успешн') || s.includes('пройден') || s.includes('принят')) return styles.statusDone;
+    if (s.includes('не подход') || s.includes('не пройден') || s.includes('отменен') || s.includes('отклон')) return styles.statusRejected;
+    if (s.includes('в процессе') || s.includes('ожидает') || s.includes('запланирован')) return styles.statusWork;
+    return styles.statusNew;
+  }
+
   function getCandidateStatus(candidateId: number, stageId: number): string {
     switch (stageId) {
       case 1: {
         const analysis = resumeAnalyses.find((a) => a.candidate_id === candidateId);
-        if (!analysis || analysis.score === undefined) return '—';
-        const st = resumeAnalysisStatuses.find(
-          (s) => analysis.score! >= s.min_score && analysis.score! <= s.max_score,
-        );
-        return st?.name ?? '—';
+        if (!analysis) return '—';
+        return resumeAnalysisStatuses.find(
+          (s) => s.analysis_status_id === analysis.analysis_status_id,
+        )?.name ?? '—';
       }
       case 2:
       case 3: {
@@ -103,14 +127,21 @@ export default function PublishedVacancyCard() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    if (!q) return stageCandidates;
-    return stageCandidates.filter(
-      (c) =>
-        `${c.last_name} ${c.first_name}`.toLowerCase().includes(q) ||
-        c.email.toLowerCase().includes(q) ||
-        c.phone.includes(q),
+    const result = q
+      ? stageCandidates.filter(
+          (c) =>
+            `${c.last_name} ${c.first_name}`.toLowerCase().includes(q) ||
+            c.email.toLowerCase().includes(q) ||
+            c.phone.includes(q),
+        )
+      : stageCandidates;
+    return [...result].sort(
+      (a, b) =>
+        getStatusPriority(a.candidate_id, selectedStage) -
+        getStatusPriority(b.candidate_id, selectedStage) ||
+        b.candidate_id - a.candidate_id,
     );
-  }, [stageCandidates, search]);
+  }, [stageCandidates, search, selectedStage]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -224,7 +255,14 @@ export default function PublishedVacancyCard() {
                 <td>{getChannelName(c.publication_id)}</td>
                 <td>{c.email}</td>
                 <td>{c.phone}</td>
-                <td>{getCandidateStatus(c.candidate_id, selectedStage)}</td>
+                <td>
+                  {(() => {
+                    const st = getCandidateStatus(c.candidate_id, selectedStage);
+                    return st === '—'
+                      ? '—'
+                      : <span className={`${styles.badge} ${getStatusClass(st)}`}>{st}</span>;
+                  })()}
+                </td>
                 <td>
                   <div className={styles.actionCell}>
                     <Link to={`/candidates/${c.candidate_id}`} className={styles.actionIcon} title="Открыть">

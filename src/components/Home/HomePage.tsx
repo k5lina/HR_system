@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
+import { fmtVacancyId } from '../../utils';
 import styles from './Home.module.css';
 
 const REPORTS = [
@@ -50,6 +51,7 @@ export default function HomePage() {
   const roleId = currentUser?.role_id ?? 2;
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
 
   const activePubs = publications.filter((p) => p.is_active);
 
@@ -67,17 +69,29 @@ export default function HomePage() {
     return rows;
   }, [activePubs, vacancies]);
 
+  function getFirstPubTimestamp(vacancyId: number): number {
+    const dates = activePubs
+      .filter((p) => p.vacancy_id === vacancyId)
+      .map((p) => new Date(p.published_at).getTime());
+    return dates.length ? Math.min(...dates) : 0;
+  }
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    if (!q) return activeVacancies;
-    return activeVacancies.filter((vac) => {
-      const req = requests.find((r) => r.request_id === vac.request_id);
-      const dp  = req ? departmentPositions.find((d) => d.department_position_id === req.department_position_id) : null;
-      const dept = dp ? departments.find((d) => d.department_id === dp.department_id)?.name ?? '' : '';
-      const pos  = dp ? positions.find((p) => p.position_id === dp.position_id)?.name ?? '' : '';
-      return dept.toLowerCase().includes(q) || pos.toLowerCase().includes(q) || vac.title.toLowerCase().includes(q);
+    const result = q
+      ? activeVacancies.filter((vac) => {
+          const req = requests.find((r) => r.request_id === vac.request_id);
+          const dp  = req ? departmentPositions.find((d) => d.department_position_id === req.department_position_id) : null;
+          const dept = dp ? departments.find((d) => d.department_id === dp.department_id)?.name ?? '' : '';
+          const pos  = dp ? positions.find((p) => p.position_id === dp.position_id)?.name ?? '' : '';
+          return dept.toLowerCase().includes(q) || pos.toLowerCase().includes(q) || vac.title.toLowerCase().includes(q);
+        })
+      : activeVacancies;
+    return [...result].sort((a, b) => {
+      const diff = getFirstPubTimestamp(b.vacancy_id) - getFirstPubTimestamp(a.vacancy_id);
+      return sortDir === 'desc' ? diff : -diff;
     });
-  }, [activeVacancies, search, requests, departmentPositions, departments, positions]);
+  }, [activeVacancies, search, sortDir, activePubs, requests, departmentPositions, departments, positions]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -138,7 +152,7 @@ export default function HomePage() {
   const statCards = [
     { label: 'Заявок',                 value: requests.length,    accent: true  },
     { label: 'Вакансий',               value: vacancies.length,   accent: false },
-    { label: 'Опубликованных вакансий',value: activePubs.length,  accent: false },
+    { label: 'Опубликованных вакансий',value: activeVacancies.length, accent: false },
     { label: 'Собеседований',          value: interviews.length,  accent: false },
   ];
 
@@ -203,9 +217,16 @@ export default function HomePage() {
             <thead>
               <tr>
                 <th>№</th>
+                <th>ID вакансии</th>
                 <th>Должность</th>
                 <th>Отдел</th>
-                <th>Дата публикации</th>
+                <th
+                  className={`${styles.thSortable} ${styles.thSortActive}`}
+                  onClick={() => { setSortDir((d) => d === 'desc' ? 'asc' : 'desc'); setPage(1); }}
+                >
+                  Дата публикации
+                  <span className={styles.thSortIcon}>{sortDir === 'desc' ? '▼' : '▲'}</span>
+                </th>
                 <th>Статус</th>
                 <th></th>
               </tr>
@@ -218,6 +239,9 @@ export default function HomePage() {
                 return (
                   <tr key={vac.vacancy_id}>
                     <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
+                    <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--text-light)' }}>
+                      {fmtVacancyId(vac.vacancy_id, vac.created_at)}
+                    </td>
                     <td>{pos || vac.title}</td>
                     <td>{dept}</td>
                     <td>{pubDate}</td>
@@ -239,7 +263,7 @@ export default function HomePage() {
                 );
               })}
               {paginated.length === 0 && (
-                <tr><td colSpan={6} className={styles.empty}>Опубликованных вакансий нет</td></tr>
+                <tr><td colSpan={7} className={styles.empty}>Опубликованных вакансий нет</td></tr>
               )}
             </tbody>
           </table>

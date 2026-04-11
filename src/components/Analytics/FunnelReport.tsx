@@ -24,6 +24,73 @@ export default function FunnelReport() {
 
   const today = new Date().toLocaleDateString('ru-RU');
 
+  // Cascading filter options
+  const availablePositions = useMemo(() => {
+    if (deptId === 'all') return positions;
+    const posIds = new Set(
+      departmentPositions
+        .filter((dp) => dp.department_id === deptId)
+        .map((dp) => dp.position_id),
+    );
+    return positions.filter((p) => posIds.has(p.position_id));
+  }, [positions, departmentPositions, deptId]);
+
+  const availableVacancies = useMemo(() => {
+    return vacancies.filter((v) => {
+      const req = requests.find((r) => r.request_id === v.request_id);
+      if (!req) return deptId === 'all' && posId === 'all';
+      const dp = departmentPositions.find((d) => d.department_position_id === req.department_position_id);
+      if (!dp) return deptId === 'all' && posId === 'all';
+      if (deptId !== 'all' && dp.department_id !== deptId) return false;
+      if (posId !== 'all' && dp.position_id !== posId) return false;
+      return true;
+    });
+  }, [vacancies, requests, departmentPositions, deptId, posId]);
+
+  function handleDeptChange(newDeptId: number | 'all') {
+    setDeptId(newDeptId);
+    // Reset posId if no longer available
+    if (posId !== 'all' && newDeptId !== 'all') {
+      const posIdsForDept = new Set(
+        departmentPositions
+          .filter((dp) => dp.department_id === newDeptId)
+          .map((dp) => dp.position_id),
+      );
+      if (!posIdsForDept.has(posId as number)) setPosId('all');
+    }
+    // Reset vacancyId if no longer available
+    if (vacancyId !== 'all') {
+      const still = vacancies.some((v) => {
+        if (v.vacancy_id !== vacancyId) return false;
+        const req = requests.find((r) => r.request_id === v.request_id);
+        if (!req) return false;
+        const dp = departmentPositions.find((d) => d.department_position_id === req.department_position_id);
+        if (!dp) return false;
+        if (newDeptId !== 'all' && dp.department_id !== newDeptId) return false;
+        return true;
+      });
+      if (!still) setVacancyId('all');
+    }
+  }
+
+  function handlePosChange(newPosId: number | 'all') {
+    setPosId(newPosId);
+    // Reset vacancyId if no longer available
+    if (vacancyId !== 'all') {
+      const still = vacancies.some((v) => {
+        if (v.vacancy_id !== vacancyId) return false;
+        const req = requests.find((r) => r.request_id === v.request_id);
+        if (!req) return false;
+        const dp = departmentPositions.find((d) => d.department_position_id === req.department_position_id);
+        if (!dp) return false;
+        if (deptId !== 'all' && dp.department_id !== deptId) return false;
+        if (newPosId !== 'all' && dp.position_id !== newPosId) return false;
+        return true;
+      });
+      if (!still) setVacancyId('all');
+    }
+  }
+
   // Filtered candidates
   const filtered = useMemo(() => {
     return candidates.filter((c) => {
@@ -79,23 +146,23 @@ export default function FunnelReport() {
       <div className={styles.filtersGrid}>
         <div className={styles.filterField}>
           <label className={styles.filterLabel}>Отдел</label>
-          <select className={styles.filterSelect} value={deptId} onChange={(e) => setDeptId(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
+          <select className={styles.filterSelect} value={deptId} onChange={(e) => handleDeptChange(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
             <option value="all">Отдел</option>
             {departments.map((d) => <option key={d.department_id} value={d.department_id}>{d.name}</option>)}
           </select>
         </div>
         <div className={styles.filterField}>
           <label className={styles.filterLabel}>Должность</label>
-          <select className={styles.filterSelect} value={posId} onChange={(e) => setPosId(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
+          <select className={styles.filterSelect} value={posId} onChange={(e) => handlePosChange(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
             <option value="all">Должность</option>
-            {positions.map((p) => <option key={p.position_id} value={p.position_id}>{p.name}</option>)}
+            {availablePositions.map((p) => <option key={p.position_id} value={p.position_id}>{p.name}</option>)}
           </select>
         </div>
         <div className={styles.filterField}>
           <label className={styles.filterLabel}>Вакансия</label>
           <select className={styles.filterSelect} value={vacancyId} onChange={(e) => setVacancyId(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
             <option value="all">Вакансия</option>
-            {vacancies.map((v) => <option key={v.vacancy_id} value={v.vacancy_id}>{v.title}</option>)}
+            {availableVacancies.map((v) => <option key={v.vacancy_id} value={v.vacancy_id}>{v.title}</option>)}
           </select>
         </div>
         <button className={formStyles.btnSave} onClick={() => setGenerated(true)}>

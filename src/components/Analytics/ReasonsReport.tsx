@@ -24,6 +24,34 @@ export default function ReasonsReport() {
 
   const today = new Date().toLocaleDateString('ru-RU');
 
+  // Cascading vacancy options (filtered by dept)
+  const availableVacancies = useMemo(() => {
+    return vacancies.filter((v) => {
+      if (deptId === 'all') return true;
+      const req = requests.find((r) => r.request_id === v.request_id);
+      if (!req) return false;
+      const dp = departmentPositions.find((d) => d.department_position_id === req.department_position_id);
+      if (!dp) return false;
+      return dp.department_id === deptId;
+    });
+  }, [vacancies, requests, departmentPositions, deptId]);
+
+  function handleDeptChange(newDeptId: number | 'all') {
+    setDeptId(newDeptId);
+    if (vacancyId !== 'all') {
+      const still = vacancies.some((v) => {
+        if (v.vacancy_id !== vacancyId) return false;
+        if (newDeptId === 'all') return true;
+        const req = requests.find((r) => r.request_id === v.request_id);
+        if (!req) return false;
+        const dp = departmentPositions.find((d) => d.department_position_id === req.department_position_id);
+        if (!dp) return false;
+        return dp.department_id === newDeptId;
+      });
+      if (!still) setVacancyId('all');
+    }
+  }
+
   const pieData = useMemo(() => {
     const rejected = candidates.filter((c) => {
       if (!c.rejection_reason_id) return false;
@@ -101,7 +129,7 @@ export default function ReasonsReport() {
         </div>
         <div className={styles.filterField}>
           <label className={styles.filterLabel}>Отдел</label>
-          <select className={styles.filterSelect} value={deptId} onChange={(e) => setDeptId(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
+          <select className={styles.filterSelect} value={deptId} onChange={(e) => handleDeptChange(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
             <option value="all">Отдел</option>
             {departments.map((d) => <option key={d.department_id} value={d.department_id}>{d.name}</option>)}
           </select>
@@ -110,7 +138,7 @@ export default function ReasonsReport() {
           <label className={styles.filterLabel}>Вакансия</label>
           <select className={styles.filterSelect} value={vacancyId} onChange={(e) => setVacancyId(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
             <option value="all">Вакансия</option>
-            {vacancies.map((v) => <option key={v.vacancy_id} value={v.vacancy_id}>{v.title}</option>)}
+            {availableVacancies.map((v) => <option key={v.vacancy_id} value={v.vacancy_id}>{v.title}</option>)}
           </select>
         </div>
         <button className={formStyles.btnSave} onClick={() => setGenerated(true)}>

@@ -81,3 +81,57 @@ export function nextId(items: any[], idKey: string): number {
   if (items.length === 0) return 1;
   return Math.max(...items.map((i) => Number(i[idKey]))) + 1;
 }
+
+/* ── Formatted document ID helpers ──────────────────────────── */
+function _yyMm(dateStr: string): [string, string] {
+  const d = new Date(dateStr);
+  return [String(d.getFullYear()).slice(2), String(d.getMonth() + 1).padStart(2, '0')];
+}
+
+/** YY-MM-NN */
+export function fmtRequestId(id: number, dateStr: string): string {
+  const [yy, mm] = _yyMm(dateStr);
+  return `${yy}-${mm}-${String(id).padStart(2, '0')}`;
+}
+
+/** YY-MM-NN */
+export function fmtVacancyId(id: number, dateStr: string): string {
+  const [yy, mm] = _yyMm(dateStr);
+  return `${yy}-${mm}-${String(id).padStart(2, '0')}`;
+}
+
+/** YY-MM-NNN */
+export function fmtPublicationId(id: number, dateStr: string): string {
+  const [yy, mm] = _yyMm(dateStr);
+  return `${yy}-${mm}-${String(id).padStart(3, '0')}`;
+}
+
+/** S-YY-MM-NN (S = stage number) */
+export function fmtInterviewId(id: number, dateStr: string, stage: number): string {
+  const [yy, mm] = _yyMm(dateStr);
+  return `${stage}-${yy}-${mm}-${String(id).padStart(2, '0')}`;
+}
+
+/** YY-MM-NNNN */
+export function fmtAnalysisId(id: number, dateStr: string): string {
+  const [yy, mm] = _yyMm(dateStr);
+  return `${yy}-${mm}-${String(id).padStart(4, '0')}`;
+}
+
+/** YY-MM-NN */
+export function fmtSecurityCheckId(id: number, dateStr: string): string {
+  const [yy, mm] = _yyMm(dateStr);
+  return `${yy}-${mm}-${String(id).padStart(2, '0')}`;
+}
+
+/** YY-MM-NN */
+export function fmtMedicalCheckId(id: number, dateStr: string): string {
+  const [yy, mm] = _yyMm(dateStr);
+  return `${yy}-${mm}-${String(id).padStart(2, '0')}`;
+}
+
+/** YY-MM-NN */
+export function fmtOfferId(id: number, dateStr: string): string {
+  const [yy, mm] = _yyMm(dateStr);
+  return `${yy}-${mm}-${String(id).padStart(2, '0')}`;
+}

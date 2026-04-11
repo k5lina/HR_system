@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import { nextId } from '../../utils';
+import { nextId, fmtVacancyId } from '../../utils';
 import styles from '../Requests/Requests.module.css';
 
 export default function VacancyList() {
@@ -13,6 +13,7 @@ export default function VacancyList() {
   } = useApp();
 
   const [search, setSearch] = useState('');
+  const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
   const [publishingId, setPublishingId] = useState<number | null>(null);
   const [pubDate, setPubDate] = useState(new Date().toISOString().slice(0, 10));
   const [channelId, setChannelId] = useState(0);
@@ -41,12 +42,16 @@ export default function VacancyList() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    if (!q) return vacancies;
-    return vacancies.filter((v) => {
+    const sorted = [...vacancies].sort((a, b) => {
+      const diff = new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      return sortDir === 'desc' ? diff : -diff;
+    });
+    if (!q) return sorted;
+    return sorted.filter((v) => {
       const { pos, dept } = getVacancyMeta(v.vacancy_id);
       return pos.toLowerCase().includes(q) || dept.toLowerCase().includes(q);
     });
-  }, [vacancies, search, requests, departmentPositions, departments, positions]);
+  }, [vacancies, search, sortDir, requests, departmentPositions, departments, positions]);
 
   function handleDelete(id: number) {
     if (window.confirm('Вы уверены, что хотите удалить эту вакансию?')) {
@@ -111,10 +116,17 @@ export default function VacancyList() {
           <thead>
             <tr>
               <th>№</th>
+              <th>ID вакансии</th>
               <th>Должность</th>
               <th>Отдел</th>
               <th>Руководитель</th>
-              <th>Дата создания</th>
+              <th
+                className={`${styles.thSortable} ${styles.thSortActive}`}
+                onClick={() => setSortDir((d) => d === 'desc' ? 'asc' : 'desc')}
+              >
+                Дата создания
+                <span className={styles.thSortIcon}>{sortDir === 'desc' ? '▼' : '▲'}</span>
+              </th>
               <th>Статус</th>
               <th style={{ width: '90px' }}></th>
             </tr>
@@ -125,6 +137,9 @@ export default function VacancyList() {
               return (
                 <tr key={v.vacancy_id}>
                   <td>{idx + 1}</td>
+                  <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--text-light)' }}>
+                    {fmtVacancyId(v.vacancy_id, v.created_at)}
+                  </td>
                   <td>{pos}</td>
                   <td>{dept}</td>
                   <td>{manager}</td>
