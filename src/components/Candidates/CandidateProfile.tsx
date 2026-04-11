@@ -1,15 +1,11 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
+import {
+  nextId, fmtInterviewId, fmtSecurityCheckId,
+  fmtMedicalCheckId, fmtOfferId, fmtAnalysisId,
+} from '../../utils';
 import styles from '../Requests/Requests.module.css';
-
-const STAGE_ROUTES: Record<number, string> = {
-  2: 'phone-interview',
-  3: 'main-interview',
-  4: 'security-check',
-  5: 'medical-check',
-  6: 'offer',
-};
 
 export default function CandidateProfile() {
   const { id } = useParams();
@@ -21,10 +17,17 @@ export default function CandidateProfile() {
     publications, vacancies, requests,
     departmentPositions, positions,
     selectionStages, rejectionReasons,
+    interviews, setInterviews,
+    securityChecks, medicalChecks, jobOffers,
+    resumeAnalyses,
+    interviewStatuses, medicalCheckStatuses, offerStatuses,
+    resumeAnalysisStatuses,
+    currentUser,
   } = useApp();
 
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReasonId, setRejectReasonId] = useState(1);
+  const [showHistory, setShowHistory] = useState(false);
 
   const candidate = candidates.find((c) => c.candidate_id === candidateId);
   if (!candidate) {
@@ -54,6 +57,24 @@ export default function CandidateProfile() {
 
   function handleApprove() {
     if (!window.confirm('Одобрить кандидата и перевести на следующий этап?')) return;
+    const now = new Date().toISOString();
+    // Auto-create phone interview if not yet exists
+    setInterviews((prev) => {
+      if (prev.some((i) => i.candidate_id === candidateId && i.stage_id === 2)) return prev;
+      return [
+        ...prev,
+        {
+          interview_id: nextId(prev, 'interview_id'),
+          created_at: now,
+          scheduled_at: '',
+          questions: '',
+          candidate_id: candidateId,
+          stage_id: 2,
+          interview_status_id: 1,
+          user_id: currentUser!.user_id,
+        },
+      ];
+    });
     setCandidates((prev) =>
       prev.map((c) => c.candidate_id === candidateId ? { ...c, stage_id: 2 } : c),
     );
@@ -70,9 +91,89 @@ export default function CandidateProfile() {
     navigate(backTo);
   }
 
-  const historyRoute = STAGE_ROUTES[candidate.stage_id]
-    ? `/selection/${candidateId}/${STAGE_ROUTES[candidate.stage_id]}`
-    : null;
+  // ─── History data ─────────────────────────────────────────────
+  const phoneInterview = interviews.find((i) => i.candidate_id === candidateId && i.stage_id === 2);
+  const mainInterview  = interviews.find((i) => i.candidate_id === candidateId && i.stage_id === 3);
+  const securityCheck  = securityChecks.find((s) => s.candidate_id === candidateId);
+  const medicalCheck   = medicalChecks.find((m) => m.candidate_id === candidateId);
+  const jobOffer       = jobOffers.find((o) => o.candidate_id === candidateId);
+  const resumeAnalysis = resumeAnalyses.find((a) => a.candidate_id === candidateId);
+
+  function getInterviewStatus(statusId: number) {
+    return interviewStatuses.find((s) => s.interview_status_id === statusId)?.name ?? '—';
+  }
+  function getMedStatus(statusId: number) {
+    return medicalCheckStatuses.find((s) => s.medical_check_status_id === statusId)?.name ?? '—';
+  }
+  function getOfferStatus(statusId: number) {
+    return offerStatuses.find((s) => s.offer_status_id === statusId)?.name ?? '—';
+  }
+  function getAnalysisStatus(statusId: number) {
+    return resumeAnalysisStatuses.find((s) => s.analysis_status_id === statusId)?.name ?? '—';
+  }
+
+  function fmtDt(dt: string | undefined) {
+    if (!dt) return '—';
+    return new Date(dt).toLocaleString('ru-RU', {
+      day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit',
+    });
+  }
+
+  interface HistoryEntry {
+    label: string;
+    id: string;
+    date: string;
+    status: string;
+    route: string;
+    exists: boolean;
+  }
+
+  const historyEntries: HistoryEntry[] = [
+    {
+      label: 'Телефонное интервью',
+      id: phoneInterview ? fmtInterviewId(phoneInterview.interview_id, phoneInterview.scheduled_at, 2) : '—',
+      date: fmtDt(phoneInterview?.scheduled_at || phoneInterview?.created_at),
+      status: phoneInterview ? getInterviewStatus(phoneInterview.interview_status_id) : '—',
+      route: `/selection/${candidateId}/phone-interview`,
+      exists: !!phoneInterview,
+    },
+    {
+      label: 'Собеседование с руководителем',
+      id: mainInterview ? fmtInterviewId(mainInterview.interview_id, mainInterview.scheduled_at, 3) : '—',
+      date: fmtDt(mainInterview?.scheduled_at || mainInterview?.created_at),
+      status: mainInterview ? getInterviewStatus(mainInterview.interview_status_id) : '—',
+      route: `/selection/${candidateId}/main-interview`,
+      exists: !!mainInterview,
+    },
+    {
+      label: 'Проверка в Службе безопасности',
+      id: securityCheck ? fmtSecurityCheckId(securityCheck.security_check_id, securityCheck.created_at) : '—',
+      date: fmtDt(securityCheck?.created_at),
+      status: securityCheck
+        ? (securityCheck.result === true ? 'Проверка пройдена' : securityCheck.result === false ? 'Не пройдена' : 'В процессе')
+        : '—',
+      route: `/selection/${candidateId}/security-check`,
+      exists: !!securityCheck,
+    },
+    {
+      label: 'Медицинская проверка',
+      id: medicalCheck ? fmtMedicalCheckId(medicalCheck.medical_check_id, medicalCheck.created_at) : '—',
+      date: fmtDt(medicalCheck?.created_at),
+      status: medicalCheck ? getMedStatus(medicalCheck.medical_check_status_id) : '—',
+      route: `/selection/${candidateId}/medical-check`,
+      exists: !!medicalCheck,
+    },
+    {
+      label: 'Предложение о трудоустройстве',
+      id: jobOffer ? fmtOfferId(jobOffer.offer_id, jobOffer.created_at) : '—',
+      date: fmtDt(jobOffer?.created_at),
+      status: jobOffer ? getOfferStatus(jobOffer.offer_status_id) : '—',
+      route: `/selection/${candidateId}/offer`,
+      exists: !!jobOffer,
+    },
+  ];
+
+  const hasAnyHistory = historyEntries.some((e) => e.exists);
 
   return (
     <div className={styles.section}>
@@ -96,9 +197,9 @@ export default function CandidateProfile() {
             <button className={styles.btnSubmit} onClick={() => setShowRejectModal(true)}>Отклонить кандидата</button>
           </>
         ) : (
-          historyRoute
-            ? <Link to={historyRoute} className={styles.btnSave} style={{ textDecoration: 'none' }}>Посмотреть историю отбора</Link>
-            : <button className={styles.btnSave} disabled>Посмотреть историю отбора</button>
+          <button className={styles.btnSave} onClick={() => setShowHistory(true)}>
+            Посмотреть историю отбора
+          </button>
         )}
       </div>
 
@@ -196,6 +297,71 @@ export default function CandidateProfile() {
             </div>
             <div className={styles.modalActions}>
               <button className={styles.btnSubmit} onClick={handleRejectConfirm}>Подтвердить</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* History modal */}
+      {showHistory && (
+        <div className={styles.modalBackdrop} onClick={() => setShowHistory(false)}>
+          <div
+            className={`${styles.modal} ${styles.modalWide}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <span className={styles.modalTitle}>История отбора</span>
+              <button className={styles.modalClose} onClick={() => setShowHistory(false)}>✕</button>
+            </div>
+
+            {!hasAnyHistory && (
+              <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+                Документы по отбору ещё не созданы
+              </p>
+            )}
+
+            <div className={styles.historyList}>
+              {historyEntries.map((entry) => {
+                const inner = (
+                  <>
+                    <div className={styles.historyItemInfo}>
+                      <span className={styles.historyItemName}>{entry.label}</span>
+                      {entry.exists && (
+                        <span className={styles.historyItemId}>№ {entry.id}</span>
+                      )}
+                    </div>
+                    <div className={styles.historyItemRight}>
+                      {entry.exists && (
+                        <>
+                          <span className={styles.historyItemDate}>{entry.date}</span>
+                          <span className={`${styles.badge} ${styles.statusWork}`} style={{ fontSize: '0.7rem' }}>
+                            {entry.status}
+                          </span>
+                        </>
+                      )}
+                      {!entry.exists && (
+                        <span style={{ fontSize: '0.78rem', color: 'var(--text-light)' }}>Не создан</span>
+                      )}
+                      <span className={styles.historyItemArrow}>›</span>
+                    </div>
+                  </>
+                );
+
+                return entry.exists ? (
+                  <Link
+                    key={entry.route}
+                    to={entry.route}
+                    className={styles.historyItem}
+                    onClick={() => setShowHistory(false)}
+                  >
+                    {inner}
+                  </Link>
+                ) : (
+                  <div key={entry.route} className={`${styles.historyItem} ${styles.historyItemMissing}`}>
+                    {inner}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

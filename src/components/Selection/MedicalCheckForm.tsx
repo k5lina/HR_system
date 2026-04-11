@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { nextId, fmtMedicalCheckId } from '../../utils';
+
 import styles from '../Requests/Requests.module.css';
 
 export default function MedicalCheckForm() {
@@ -13,6 +14,8 @@ export default function MedicalCheckForm() {
     candidates, setCandidates,
     medicalChecks, setMedicalChecks,
     medicalCheckStatuses,
+    jobOffers, setJobOffers,
+    contractTypes,
     publications, vacancies, requests,
     departmentPositions, positions,
     rejectionReasons,
@@ -91,6 +94,23 @@ export default function MedicalCheckForm() {
   function handleApplyExamResult() {
     if (medExamResult === true) {
       persist(buildRecord(4)); // completed
+      // Auto-create job offer if not yet exists
+      setJobOffers((prev) => {
+        if (prev.some((o) => o.candidate_id === cId)) return prev;
+        const now = new Date().toISOString();
+        return [
+          ...prev,
+          {
+            offer_id: nextId(prev, 'offer_id'),
+            created_at: now,
+            proposed_salary: 0,
+            start_date: '',
+            candidate_id: cId,
+            contract_type_id: contractTypes[0]?.contract_type_id ?? 1,
+            offer_status_id: 1,
+          },
+        ];
+      });
       setCandidates((prev) =>
         prev.map((c) => c.candidate_id === cId ? { ...c, stage_id: 6 } : c),
       );

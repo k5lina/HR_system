@@ -84,6 +84,24 @@ export default function PhoneInterviewForm() {
 
   function handleApprove() {
     saveRecord(2);
+    // Auto-create main interview if not yet exists
+    setInterviews((prev) => {
+      if (prev.some((i) => i.candidate_id === cId && i.stage_id === 3)) return prev;
+      const now = new Date().toISOString();
+      return [
+        ...prev,
+        {
+          interview_id: nextId(prev, 'interview_id'),
+          created_at: now,
+          scheduled_at: '',
+          questions: '',
+          candidate_id: cId,
+          stage_id: 3,
+          interview_status_id: 1,
+          user_id: currentUser!.user_id,
+        },
+      ];
+    });
     setCandidates((prev) =>
       prev.map((c) => c.candidate_id === cId ? { ...c, stage_id: 3 } : c),
     );

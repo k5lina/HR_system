@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { nextId, generateMockSpectrumId, fmtSecurityCheckId } from '../../utils';
+
 import styles from '../Requests/Requests.module.css';
 
 export default function SecurityCheckForm() {
@@ -12,6 +13,9 @@ export default function SecurityCheckForm() {
   const {
     candidates, setCandidates,
     securityChecks, setSecurityChecks,
+    medicalChecks, setMedicalChecks,
+    jobOffers, setJobOffers,
+    contractTypes,
     publications, vacancies, requests,
     departmentPositions, positions,
     rejectionReasons,
@@ -41,6 +45,7 @@ export default function SecurityCheckForm() {
     : null;
   const linkedPos = dp ? positions.find((p) => p.position_id === dp.position_id) : null;
   const positionName = linkedPos?.name ?? vacancy?.title ?? '—';
+  const isProduction = linkedPos?.personnel_type_id === 1;
 
   const candidateName = candidate
     ? `${candidate.last_name} ${candidate.first_name}${candidate.middle_name ? ' ' + candidate.middle_name : ''}`
@@ -98,9 +103,45 @@ export default function SecurityCheckForm() {
 
   function handleApprove() {
     persist(buildRecord(true, true));
-    setCandidates((prev) =>
-      prev.map((c) => c.candidate_id === cId ? { ...c, stage_id: 5 } : c),
-    );
+    const now = new Date().toISOString();
+    if (isProduction) {
+      // Auto-create medical check if not yet exists
+      setMedicalChecks((prev) => {
+        if (prev.some((m) => m.candidate_id === cId)) return prev;
+        return [
+          ...prev,
+          {
+            medical_check_id: nextId(prev, 'medical_check_id'),
+            created_at: now.slice(0, 10),
+            candidate_id: cId,
+            medical_check_status_id: 1,
+          },
+        ];
+      });
+      setCandidates((prev) =>
+        prev.map((c) => c.candidate_id === cId ? { ...c, stage_id: 5 } : c),
+      );
+    } else {
+      // Skip medical check — auto-create job offer directly
+      setJobOffers((prev) => {
+        if (prev.some((o) => o.candidate_id === cId)) return prev;
+        return [
+          ...prev,
+          {
+            offer_id: nextId(prev, 'offer_id'),
+            created_at: now,
+            proposed_salary: 0,
+            start_date: '',
+            candidate_id: cId,
+            contract_type_id: contractTypes[0]?.contract_type_id ?? 1,
+            offer_status_id: 1,
+          },
+        ];
+      });
+      setCandidates((prev) =>
+        prev.map((c) => c.candidate_id === cId ? { ...c, stage_id: 6 } : c),
+      );
+    }
     navigate(backTo);
   }
 

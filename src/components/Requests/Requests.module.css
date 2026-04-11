@@ -147,6 +147,22 @@
 .modalInput { border: none; border-bottom: 1px solid var(--text-dark); padding: 0.2rem 0; font-size: 0.875rem; font-family: inherit; outline: none; background: transparent; }
 .modalSelect { border: 1px solid var(--beige-200); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.875rem; font-family: inherit; outline: none; width: 100%; }
 .modalActions { display: flex; justify-content: center; }
+.modalWide { width: 660px; }
+/* History modal list */
+.historyList { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem; }
+.historyItem {
+  display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem;
+  border: 1.5px solid var(--beige-200); border-radius: var(--radius-md);
+  text-decoration: none; color: var(--text-dark); transition: background 0.12s;
+}
+.historyItem:hover { background: var(--beige-50); }
+.historyItemMissing { opacity: 0.4; pointer-events: none; }
+.historyItemInfo { flex: 1; display: flex; flex-direction: column; gap: 0.15rem; }
+.historyItemName { font-weight: 700; font-size: 0.875rem; }
+.historyItemId { font-family: monospace; font-size: 0.7rem; color: var(--text-light); }
+.historyItemRight { display: flex; align-items: center; gap: 0.75rem; }
+.historyItemDate { font-size: 0.78rem; color: var(--text-light); white-space: nowrap; }
+.historyItemArrow { color: var(--text-light); font-size: 1rem; }
 
 /* Offer / generic 3-column field grid */
 .fieldsGrid3 {
