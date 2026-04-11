@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import { nextId } from '../../utils';
+import { nextId, fmtRequestId } from '../../utils';
 import styles from './Requests.module.css';
 
 export default function RequestForm() {
@@ -114,7 +114,9 @@ export default function RequestForm() {
             <path d="M19 12H5M12 19L5 12l7-7"/>
           </svg>
         </Link>
-        <h2 className={styles.title}>Заявка на подбор персонала</h2>
+        <h2 className={styles.title}>
+          Заявка на подбор персонала{existing ? ` №${fmtRequestId(existing.request_id, existing.created_at)}` : ''}
+        </h2>
       </div>
 
       <div className={styles.formToolbar}>
@@ -132,10 +134,6 @@ export default function RequestForm() {
 
       <div className={styles.autoFields}>
         <div className={styles.autoRow}>
-          <span className={styles.autoLabel}>Номер заявки</span>
-          <span className={styles.autoValue}>{displayId}</span>
-        </div>
-        <div className={styles.autoRow}>
           <span className={styles.autoLabel}>Дата создания</span>
           <span className={styles.autoValue}>{displayDate}</span>
         </div>
@@ -147,6 +145,10 @@ export default function RequestForm() {
 
       <div className={styles.formGrid}>
         <div className={styles.fieldRow}>
+          <label className={styles.fieldRowLabel}>Требуемый опыт работы</label>
+          <input type="text" className={styles.fieldRowInput} value={experience} onChange={(e) => setExperience(e.target.value)} disabled={!canEdit} />
+        </div>
+        <div className={styles.fieldRow}>
           <label className={styles.fieldRowLabel}>Отдел</label>
           <select className={styles.fieldRowSelect} value={deptId} onChange={(e) => { setDeptId(Number(e.target.value)); setDpId(0); }} disabled={!canEdit}>
             <option value={0}>Отдел</option>
@@ -156,10 +158,13 @@ export default function RequestForm() {
           </select>
         </div>
         <div className={styles.fieldRow}>
-          <label className={styles.fieldRowLabel}>Требуемый опыт работы</label>
-          <input type="text" className={styles.fieldRowInput} value={experience} onChange={(e) => setExperience(e.target.value)} disabled={!canEdit} />
+          <label className={styles.fieldRowLabel}>Тип занятости</label>
+          <select className={styles.fieldRowSelect} value={employmentTypeId} onChange={(e) => setEmploymentTypeId(Number(e.target.value))} disabled={!canEdit}>
+            {employmentTypes.map((et) => (
+              <option key={et.employment_type_id} value={et.employment_type_id}>{et.name}</option>
+            ))}
+          </select>
         </div>
-
         <div className={styles.fieldRow}>
           <label className={styles.fieldRowLabel}>Должность</label>
           <select className={styles.fieldRowSelect} value={dpId} onChange={(e) => setDpId(Number(e.target.value))} disabled={!canEdit || !deptId}>
@@ -168,14 +173,6 @@ export default function RequestForm() {
               const pos = positions.find((p) => p.position_id === dp.position_id);
               return <option key={dp.department_position_id} value={dp.department_position_id}>{pos?.name}</option>;
             })}
-          </select>
-        </div>
-        <div className={styles.fieldRow}>
-          <label className={styles.fieldRowLabel}>Тип занятости</label>
-          <select className={styles.fieldRowSelect} value={employmentTypeId} onChange={(e) => setEmploymentTypeId(Number(e.target.value))} disabled={!canEdit}>
-            {employmentTypes.map((et) => (
-              <option key={et.employment_type_id} value={et.employment_type_id}>{et.name}</option>
-            ))}
           </select>
         </div>
       </div>

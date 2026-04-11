@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import { nextId } from '../../utils';
+import { nextId, fmtVacancyId } from '../../utils';
 import styles from '../Requests/Requests.module.css';
 
 export default function VacancyForm() {
@@ -117,7 +117,9 @@ export default function VacancyForm() {
             <path d="M19 12H5M12 19L5 12l7-7" />
           </svg>
         </Link>
-        <h2 className={styles.title}>Вакансия</h2>
+        <h2 className={styles.title}>
+          Вакансия{existing ? ` №${fmtVacancyId(existing.vacancy_id, existing.created_at)}` : ''}
+        </h2>
       </div>
 
       <div className={styles.formToolbar}>
@@ -126,10 +128,6 @@ export default function VacancyForm() {
 
       <div className={styles.autoFields}>
         <div className={styles.autoRow}>
-          <span className={styles.autoLabel}>Номер вакансии</span>
-          <span className={styles.autoValue}>{displayId}</span>
-        </div>
-        <div className={styles.autoRow}>
           <span className={styles.autoLabel}>Дата создания</span>
           <span className={styles.autoValue}>{displayDate}</span>
         </div>
@@ -137,15 +135,10 @@ export default function VacancyForm() {
           <span className={styles.autoLabel}>Руководитель отдела</span>
           <span className={styles.autoValue}>{authorName}</span>
         </div>
-      </div>
-
-      <div className={styles.formGrid}>
-        <div className={styles.fieldRow}>
-          <label className={styles.fieldRowLabel}>Отдел</label>
+        <div className={styles.autoRow}>
+          <span className={styles.autoLabel}>Отдел</span>
           <span className={styles.autoValue}>{linkedDept?.name ?? '—'}</span>
-        </div>
-        <div className={styles.fieldRow}>
-          <label className={styles.fieldRowLabel}>Должность</label>
+          <span className={styles.autoLabel} style={{ marginLeft: '3rem' }}>Должность</span>
           <span className={styles.autoValue}>{linkedPos?.name ?? '—'}</span>
         </div>
       </div>

@@ -20,6 +20,13 @@
   padding: 0.4rem 1rem; width: 300px;
 }
 .searchInput { border: none; outline: none; font-size: 0.8125rem; font-family: 'Montserrat', sans-serif; font-weight: 500; width: 100%; }
+.topActionsRight { display: flex; align-items: center; gap: 0.75rem; }
+.filterSelect {
+  border: 1.5px solid var(--beige-200); border-radius: 20px;
+  padding: 0.4rem 1rem; font-size: 0.8125rem; font-family: 'Montserrat', sans-serif;
+  font-weight: 500; color: var(--text-dark); background: var(--white);
+  outline: none; cursor: pointer; white-space: nowrap;
+}
 
 /* Table */
 .tableWrap {
@@ -84,11 +91,11 @@
 .fieldRow { display: flex; align-items: center; }
 .fieldRowLabel { width: 140px; font-size: 0.875rem; font-weight: 700; color: var(--text-dark); flex-shrink: 0; }
 .fieldRowSelect {
-  flex: 1; border: 1px solid var(--text-dark); border-radius: 6px; padding: 0.5rem;
+  flex: 1; max-width: 260px; border: 1px solid var(--text-dark); border-radius: 6px; padding: 0.5rem;
   font-size: 0.8125rem; font-family: inherit; outline: none; background: var(--white);
 }
 .fieldRowInput {
-  flex: 1; border: none; border-bottom: 1px solid var(--text-dark); padding: 0.2rem 0;
+  flex: 1; max-width: 260px; border: none; border-bottom: 1px solid var(--text-dark); padding: 0.2rem 0;
   font-size: 0.8125rem; font-family: inherit; outline: none; background: transparent;
 }
 

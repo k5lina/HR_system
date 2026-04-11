@@ -20,6 +20,8 @@ export default function PublishedVacancyCard() {
   const [selectedStage, setSelectedStage] = useState(1);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [channelFilter, setChannelFilter] = useState(0);
+  const [statusFilter, setStatusFilter] = useState('');
 
   const vacancy = vacancies.find((v) => v.vacancy_id === vacancyId);
 
@@ -125,23 +127,49 @@ export default function PublishedVacancyCard() {
     [vacancyCandidates, selectedStage],
   );
 
+  // Available channels for this vacancy's publications
+  const availableChannels = useMemo(() => {
+    return vacancyPubs
+      .map((p) => ({ id: p.channel_id, name: searchChannels.find((ch) => ch.channel_id === p.channel_id)?.name ?? '—' }))
+      .filter((ch, i, arr) => arr.findIndex((x) => x.id === ch.id) === i)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [vacancyPubs, searchChannels]);
+
+  // Available statuses for current stage
+  const availableStatuses = useMemo(() => {
+    const s = new Set(
+      stageCandidates
+        .map((c) => getCandidateStatus(c.candidate_id, selectedStage))
+        .filter((st) => st !== '—'),
+    );
+    return [...s].sort();
+  }, [stageCandidates, selectedStage, resumeAnalyses, interviews, securityChecks, medicalChecks, jobOffers]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    const result = q
-      ? stageCandidates.filter(
-          (c) =>
-            `${c.last_name} ${c.first_name}`.toLowerCase().includes(q) ||
-            c.email.toLowerCase().includes(q) ||
-            c.phone.includes(q),
-        )
-      : stageCandidates;
-    return [...result].sort(
-      (a, b) =>
-        getStatusPriority(a.candidate_id, selectedStage) -
-        getStatusPriority(b.candidate_id, selectedStage) ||
-        b.candidate_id - a.candidate_id,
-    );
-  }, [stageCandidates, search, selectedStage]);
+    return [...stageCandidates]
+      .filter((c) => {
+        if (channelFilter) {
+          const pub = publications.find((p) => p.publication_id === c.publication_id);
+          if (!pub || pub.channel_id !== channelFilter) return false;
+        }
+        if (statusFilter) {
+          if (getCandidateStatus(c.candidate_id, selectedStage) !== statusFilter) return false;
+        }
+        if (!q) return true;
+        return (
+          `${c.last_name} ${c.first_name}`.toLowerCase().includes(q) ||
+          c.email.toLowerCase().includes(q) ||
+          c.phone.includes(q)
+        );
+      })
+      .sort(
+        (a, b) =>
+          getStatusPriority(a.candidate_id, selectedStage) -
+          getStatusPriority(b.candidate_id, selectedStage) ||
+          b.candidate_id - a.candidate_id,
+      );
+  }, [stageCandidates, search, channelFilter, statusFilter, selectedStage, publications]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -156,6 +184,8 @@ export default function PublishedVacancyCard() {
     setSelectedStage(stageId);
     setPage(1);
     setSearch('');
+    setChannelFilter(0);
+    setStatusFilter('');
   }
 
   function renderPagination() {
@@ -219,18 +249,44 @@ export default function PublishedVacancyCard() {
       {/* Candidates table header */}
       <div className={styles.topActions}>
         <h3 className={styles.subTitle}>Кандидаты</h3>
-        <div className={styles.searchBox}>
-          <input
-            className={styles.searchInput}
-            placeholder="Поиск"
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          />
-          {search && (
-            <button style={{ border: 'none', background: 'none', cursor: 'pointer' }} onClick={() => { setSearch(''); setPage(1); }}>
-              ×
-            </button>
+        <div className={styles.topActionsRight}>
+          {availableChannels.length > 1 && (
+            <select
+              className={styles.filterSelect}
+              value={channelFilter}
+              onChange={(e) => { setChannelFilter(Number(e.target.value)); setPage(1); }}
+            >
+              <option value={0}>Все каналы</option>
+              {availableChannels.map((ch) => (
+                <option key={ch.id} value={ch.id}>{ch.name}</option>
+              ))}
+            </select>
           )}
+          {availableStatuses.length > 1 && (
+            <select
+              className={styles.filterSelect}
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+            >
+              <option value="">Все статусы</option>
+              {availableStatuses.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          )}
+          <div className={styles.searchBox}>
+            <input
+              className={styles.searchInput}
+              placeholder="Поиск"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            />
+            {search && (
+              <button style={{ border: 'none', background: 'none', cursor: 'pointer' }} onClick={() => { setSearch(''); setPage(1); }}>
+                ×
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -239,6 +295,7 @@ export default function PublishedVacancyCard() {
           <thead>
             <tr>
               <th>№</th>
+              <th>ID кандидата</th>
               <th>ФИО</th>
               <th>Канал поиска</th>
               <th>Почта</th>
@@ -251,6 +308,9 @@ export default function PublishedVacancyCard() {
             {paginated.map((c, idx) => (
               <tr key={c.candidate_id}>
                 <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
+                <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--text-light)' }}>
+                  {c.candidate_id}
+                </td>
                 <td>{c.last_name} {c.first_name}{c.middle_name ? ' ' + c.middle_name : ''}</td>
                 <td>{getChannelName(c.publication_id)}</td>
                 <td>{c.email}</td>
@@ -286,7 +346,7 @@ export default function PublishedVacancyCard() {
             ))}
             {paginated.length === 0 && (
               <tr>
-                <td colSpan={7} className={styles.empty}>Кандидатов нет</td>
+                <td colSpan={8} className={styles.empty}>Кандидатов нет</td>
               </tr>
             )}
           </tbody>

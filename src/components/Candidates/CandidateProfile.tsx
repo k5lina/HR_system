@@ -109,10 +109,6 @@ export default function CandidateProfile() {
           <span className={styles.autoValue}>{stageName}</span>
         </div>
         <div className={styles.autoRow}>
-          <span className={styles.autoLabel}>Номер кандидата</span>
-          <span className={styles.autoValue}>{candidate.candidate_id}</span>
-        </div>
-        <div className={styles.autoRow}>
           <span className={styles.autoLabel}>Должность</span>
           <span className={styles.autoValue}>{positionName}</span>
         </div>
@@ -121,22 +117,22 @@ export default function CandidateProfile() {
       {/* Info grid */}
       <div className={styles.formGrid}>
         <div className={styles.fieldRow}>
+          <label className={styles.fieldRowLabel}>Номер телефона</label>
+          <span className={styles.autoValue}>{candidate.phone}</span>
+        </div>
+        <div className={styles.fieldRow}>
           <label className={styles.fieldRowLabel}>Дата рождения</label>
           <span className={styles.autoValue}>
             {candidate.birth_date ? new Date(candidate.birth_date).toLocaleDateString('ru-RU') : '—'}
           </span>
         </div>
         <div className={styles.fieldRow}>
-          <label className={styles.fieldRowLabel}>Номер телефона</label>
-          <span className={styles.autoValue}>{candidate.phone}</span>
+          <label className={styles.fieldRowLabel}>Опыт работы</label>
+          <span className={styles.autoValue}>{candidate.work_experience} лет</span>
         </div>
         <div className={styles.fieldRow}>
           <label className={styles.fieldRowLabel}>Город проживания</label>
           <span className={styles.autoValue}>{candidate.city}</span>
-        </div>
-        <div className={styles.fieldRow}>
-          <label className={styles.fieldRowLabel}>Опыт работы</label>
-          <span className={styles.autoValue}>{candidate.work_experience} лет</span>
         </div>
       </div>
 

@@ -52,6 +52,7 @@ export default function HomePage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
+  const [deptFilter, setDeptFilter] = useState(0);
 
   const activePubs = publications.filter((p) => p.is_active);
 
@@ -69,6 +70,19 @@ export default function HomePage() {
     return rows;
   }, [activePubs, vacancies]);
 
+  const availableDepts = useMemo(() => {
+    const depts = new Map<number, string>();
+    activeVacancies.forEach((vac) => {
+      const req = requests.find((r) => r.request_id === vac.request_id);
+      const dp = req ? departmentPositions.find((d) => d.department_position_id === req.department_position_id) : null;
+      if (dp) {
+        const dept = departments.find((d) => d.department_id === dp.department_id);
+        if (dept) depts.set(dept.department_id, dept.name);
+      }
+    });
+    return [...depts.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [activeVacancies, requests, departmentPositions, departments]);
+
   function getFirstPubTimestamp(vacancyId: number): number {
     const dates = activePubs
       .filter((p) => p.vacancy_id === vacancyId)
@@ -78,20 +92,20 @@ export default function HomePage() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    const result = q
-      ? activeVacancies.filter((vac) => {
-          const req = requests.find((r) => r.request_id === vac.request_id);
-          const dp  = req ? departmentPositions.find((d) => d.department_position_id === req.department_position_id) : null;
-          const dept = dp ? departments.find((d) => d.department_id === dp.department_id)?.name ?? '' : '';
-          const pos  = dp ? positions.find((p) => p.position_id === dp.position_id)?.name ?? '' : '';
-          return dept.toLowerCase().includes(q) || pos.toLowerCase().includes(q) || vac.title.toLowerCase().includes(q);
-        })
-      : activeVacancies;
+    const result = activeVacancies.filter((vac) => {
+      const req = requests.find((r) => r.request_id === vac.request_id);
+      const dp  = req ? departmentPositions.find((d) => d.department_position_id === req.department_position_id) : null;
+      if (deptFilter && dp?.department_id !== deptFilter) return false;
+      if (!q) return true;
+      const dept = dp ? departments.find((d) => d.department_id === dp.department_id)?.name ?? '' : '';
+      const pos  = dp ? positions.find((p) => p.position_id === dp.position_id)?.name ?? '' : '';
+      return dept.toLowerCase().includes(q) || pos.toLowerCase().includes(q) || vac.title.toLowerCase().includes(q);
+    });
     return [...result].sort((a, b) => {
       const diff = getFirstPubTimestamp(b.vacancy_id) - getFirstPubTimestamp(a.vacancy_id);
       return sortDir === 'desc' ? diff : -diff;
     });
-  }, [activeVacancies, search, sortDir, activePubs, requests, departmentPositions, departments, positions]);
+  }, [activeVacancies, search, deptFilter, sortDir, activePubs, requests, departmentPositions, departments, positions]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -197,19 +211,33 @@ export default function HomePage() {
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
             <span className={styles.sectionTitle}>Опубликованные вакансии</span>
-            <div className={styles.searchBox}>
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" style={{color:'var(--text-light)', flexShrink:0}}>
-                <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-              </svg>
-              <input
-                className={styles.searchInput}
-                placeholder="Поиск"
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              />
-              {search && (
-                <button className={styles.clearBtn} onClick={() => { setSearch(''); setPage(1); }}>×</button>
+            <div className={styles.sectionHeaderRight}>
+              {availableDepts.length > 1 && (
+                <select
+                  className={styles.filterSelect}
+                  value={deptFilter}
+                  onChange={(e) => { setDeptFilter(Number(e.target.value)); setPage(1); }}
+                >
+                  <option value={0}>Все отделы</option>
+                  {availableDepts.map((d) => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+                </select>
               )}
+              <div className={styles.searchBox}>
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" style={{color:'var(--text-light)', flexShrink:0}}>
+                  <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input
+                  className={styles.searchInput}
+                  placeholder="Поиск"
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                />
+                {search && (
+                  <button className={styles.clearBtn} onClick={() => { setSearch(''); setPage(1); }}>×</button>
+                )}
+              </div>
             </div>
           </div>
 

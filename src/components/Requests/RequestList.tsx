@@ -11,10 +11,24 @@ export default function RequestList() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
+  const [statusFilter, setStatusFilter] = useState(0);
+  const [deptFilter, setDeptFilter] = useState(0);
 
   const visibleRequests = currentUser?.role_id === 3
     ? requests.filter((r) => r.user_id === currentUser.user_id)
     : requests;
+
+  const availableDepts = useMemo(() => {
+    const depts = new Map<number, string>();
+    visibleRequests.forEach((req) => {
+      const dp = departmentPositions.find((d) => d.department_position_id === req.department_position_id);
+      if (dp) {
+        const dept = departments.find((d) => d.department_id === dp.department_id);
+        if (dept) depts.set(dept.department_id, dept.name);
+      }
+    });
+    return [...depts.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [visibleRequests, departmentPositions, departments]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -24,12 +38,14 @@ export default function RequestList() {
         return sortDir === 'desc' ? diff : -diff;
       })
       .filter((req) => {
+        if (statusFilter && req.request_status_id !== statusFilter) return false;
         const dp = departmentPositions.find((d) => d.department_position_id === req.department_position_id);
+        if (deptFilter && dp?.department_id !== deptFilter) return false;
         const dept = departments.find((d) => d.department_id === dp?.department_id)?.name ?? '';
         const pos = positions.find((p) => p.position_id === dp?.position_id)?.name ?? '';
         return !q || dept.toLowerCase().includes(q) || pos.toLowerCase().includes(q);
       });
-  }, [visibleRequests, search, sortDir, departmentPositions, departments, positions]);
+  }, [visibleRequests, search, statusFilter, deptFilter, sortDir, departmentPositions, departments, positions]);
 
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -53,16 +69,40 @@ export default function RequestList() {
         {(currentUser?.role_id === 1 || currentUser?.role_id === 3) && (
           <Link to="/requests/new" className={styles.btnToolbar}>Создать новую заявку</Link>
         )}
-        <div className={styles.searchBox}>
-          <input
-            className={styles.searchInput}
-            placeholder="Поиск"
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          />
-          {search && (
-            <button style={{border:'none',background:'none',cursor:'pointer'}} onClick={() => {setSearch(''); setPage(1);}}>×</button>
+        <div className={styles.topActionsRight}>
+          {availableDepts.length > 1 && (
+            <select
+              className={styles.filterSelect}
+              value={deptFilter}
+              onChange={(e) => { setDeptFilter(Number(e.target.value)); setPage(1); }}
+            >
+              <option value={0}>Все отделы</option>
+              {availableDepts.map((d) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </select>
           )}
+          <select
+            className={styles.filterSelect}
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(Number(e.target.value)); setPage(1); }}
+          >
+            <option value={0}>Все статусы</option>
+            {requestStatuses.map((s) => (
+              <option key={s.request_status_id} value={s.request_status_id}>{s.name}</option>
+            ))}
+          </select>
+          <div className={styles.searchBox}>
+            <input
+              className={styles.searchInput}
+              placeholder="Поиск"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            />
+            {search && (
+              <button style={{border:'none',background:'none',cursor:'pointer'}} onClick={() => {setSearch(''); setPage(1);}}>×</button>
+            )}
+          </div>
         </div>
       </div>
 

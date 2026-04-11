@@ -68,23 +68,27 @@ export default function SelectionPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [posFilter, setPosFilter] = useState(0); // for 'suitable' tab
+  const [statusFilter, setStatusFilter] = useState('');
+  const [deptFilter, setDeptFilter] = useState(0);
   const [dateSortDir, setDateSortDir] = useState<'desc' | 'asc'>('desc');
 
-  // Resolve candidate meta: name, dept, pos (and posId for filtering)
+  // Resolve candidate meta: name, dept, pos (and posId/deptId for filtering)
   function getCandidateMeta(candidateId: number) {
     const c = candidates.find((x) => x.candidate_id === candidateId);
-    if (!c) return { name: '—', dept: '—', pos: '—', posId: 0 };
+    if (!c) return { name: '—', dept: '—', pos: '—', posId: 0, deptId: 0 };
     const pub = publications.find((p) => p.publication_id === c.publication_id);
     const vac = pub ? vacancies.find((v) => v.vacancy_id === pub.vacancy_id) : null;
     const req = vac ? requests.find((r) => r.request_id === vac.request_id) : null;
     const dp = req
       ? departmentPositions.find((d) => d.department_position_id === req.department_position_id)
       : null;
-    const dept = dp ? departments.find((d) => d.department_id === dp.department_id)?.name ?? '—' : '—';
+    const deptObj = dp ? departments.find((d) => d.department_id === dp.department_id) : null;
+    const dept = deptObj?.name ?? '—';
+    const deptId = deptObj?.department_id ?? 0;
     const posObj = dp ? positions.find((p) => p.position_id === dp.position_id) : null;
     const pos = posObj?.name ?? '—';
     const name = `${c.last_name} ${c.first_name}${c.middle_name ? ' ' + c.middle_name : ''}`;
-    return { name, dept, pos, posId: posObj?.position_id ?? 0 };
+    return { name, dept, pos, posId: posObj?.position_id ?? 0, deptId };
   }
 
   // Head's departments (by position_id match)
@@ -235,11 +239,31 @@ export default function SelectionPage() {
 
   const showDateCol = activeStage !== 'suitable' && activeStage !== 'new';
 
-  // Apply search + posFilter + sort
+  const availableStatuses = useMemo(() => {
+    const s = new Set(rows.map((r) => r.status).filter((st) => st !== '—'));
+    return [...s].sort();
+  }, [rows]);
+
+  const availableDepts = useMemo(() => {
+    const depts = new Map<number, string>();
+    rows.forEach((row) => {
+      const m = getCandidateMeta(row.candidateId);
+      if (m.deptId) depts.set(m.deptId, m.dept);
+    });
+    return [...depts.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [rows, candidates, publications, vacancies, requests, departmentPositions, departments, positions]);
+
+  // Apply search + posFilter + statusFilter + sort
   const filtered = useMemo(() => {
     let result = rows;
     if (activeStage === 'suitable' && posFilter) {
       result = result.filter((row) => getCandidateMeta(row.candidateId).posId === posFilter);
+    }
+    if (statusFilter) {
+      result = result.filter((row) => row.status === statusFilter);
+    }
+    if (deptFilter) {
+      result = result.filter((row) => getCandidateMeta(row.candidateId).deptId === deptFilter);
     }
     const q = search.toLowerCase();
     if (q) {
@@ -260,7 +284,7 @@ export default function SelectionPage() {
       }
       return getStatusPriority(a.status) - getStatusPriority(b.status) || b.id - a.id;
     });
-  }, [rows, search, posFilter, activeStage, dateSortDir]);
+  }, [rows, search, posFilter, statusFilter, deptFilter, activeStage, dateSortDir]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -271,6 +295,8 @@ export default function SelectionPage() {
     setPage(1);
     setSearch('');
     setPosFilter(0);
+    setStatusFilter('');
+    setDeptFilter(0);
     setDateSortDir('desc');
   }
 
@@ -401,18 +427,44 @@ export default function SelectionPage() {
 
       <div className={styles.topActions}>
         <h3 className={styles.subTitle}>Кандидаты</h3>
-        <div className={styles.searchBox}>
-          <input
-            className={styles.searchInput}
-            placeholder="Поиск"
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          />
-          {search && (
-            <button style={{ border: 'none', background: 'none', cursor: 'pointer' }} onClick={() => { setSearch(''); setPage(1); }}>
-              ×
-            </button>
+        <div className={styles.topActionsRight}>
+          {availableDepts.length > 1 && (
+            <select
+              className={styles.filterSelect}
+              value={deptFilter}
+              onChange={(e) => { setDeptFilter(Number(e.target.value)); setPage(1); }}
+            >
+              <option value={0}>Все отделы</option>
+              {availableDepts.map((d) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </select>
           )}
+          {availableStatuses.length > 1 && (
+            <select
+              className={styles.filterSelect}
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+            >
+              <option value="">Все статусы</option>
+              {availableStatuses.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          )}
+          <div className={styles.searchBox}>
+            <input
+              className={styles.searchInput}
+              placeholder="Поиск"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            />
+            {search && (
+              <button style={{ border: 'none', background: 'none', cursor: 'pointer' }} onClick={() => { setSearch(''); setPage(1); }}>
+                ×
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

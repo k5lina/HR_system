@@ -14,6 +14,8 @@ export default function VacancyList() {
 
   const [search, setSearch] = useState('');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
+  const [statusFilter, setStatusFilter] = useState(0);
+  const [deptFilter, setDeptFilter] = useState(0);
   const [publishingId, setPublishingId] = useState<number | null>(null);
   const [pubDate, setPubDate] = useState(new Date().toISOString().slice(0, 10));
   const [channelId, setChannelId] = useState(0);
@@ -40,18 +42,37 @@ export default function VacancyList() {
     return { pos, dept, manager };
   }
 
+  const availableDepts = useMemo(() => {
+    const depts = new Map<number, string>();
+    vacancies.forEach((v) => {
+      const req = requests.find((r) => r.request_id === v.request_id);
+      const dp = req ? departmentPositions.find((d) => d.department_position_id === req.department_position_id) : null;
+      if (dp) {
+        const dept = departments.find((d) => d.department_id === dp.department_id);
+        if (dept) depts.set(dept.department_id, dept.name);
+      }
+    });
+    return [...depts.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [vacancies, requests, departmentPositions, departments]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     const sorted = [...vacancies].sort((a, b) => {
       const diff = new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       return sortDir === 'desc' ? diff : -diff;
     });
-    if (!q) return sorted;
     return sorted.filter((v) => {
+      if (statusFilter && v.vacancy_status_id !== statusFilter) return false;
+      if (deptFilter) {
+        const req = requests.find((r) => r.request_id === v.request_id);
+        const dp = req ? departmentPositions.find((d) => d.department_position_id === req.department_position_id) : null;
+        if (!dp || dp.department_id !== deptFilter) return false;
+      }
+      if (!q) return true;
       const { pos, dept } = getVacancyMeta(v.vacancy_id);
       return pos.toLowerCase().includes(q) || dept.toLowerCase().includes(q);
     });
-  }, [vacancies, search, sortDir, requests, departmentPositions, departments, positions]);
+  }, [vacancies, search, statusFilter, deptFilter, sortDir, requests, departmentPositions, departments, positions]);
 
   function handleDelete(id: number) {
     if (window.confirm('Вы уверены, что хотите удалить эту вакансию?')) {
@@ -98,16 +119,40 @@ export default function VacancyList() {
     <div className={styles.section}>
       <div className={styles.topActions}>
         <div />
-        <div className={styles.searchBox}>
-          <input
-            className={styles.searchInput}
-            placeholder="Поиск"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          {search && (
-            <button style={{ border: 'none', background: 'none', cursor: 'pointer' }} onClick={() => setSearch('')}>×</button>
+        <div className={styles.topActionsRight}>
+          {availableDepts.length > 1 && (
+            <select
+              className={styles.filterSelect}
+              value={deptFilter}
+              onChange={(e) => setDeptFilter(Number(e.target.value))}
+            >
+              <option value={0}>Все отделы</option>
+              {availableDepts.map((d) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </select>
           )}
+          <select
+            className={styles.filterSelect}
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(Number(e.target.value))}
+          >
+            <option value={0}>Все статусы</option>
+            {vacancyStatuses.map((s) => (
+              <option key={s.vacancy_status_id} value={s.vacancy_status_id}>{s.name}</option>
+            ))}
+          </select>
+          <div className={styles.searchBox}>
+            <input
+              className={styles.searchInput}
+              placeholder="Поиск"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <button style={{ border: 'none', background: 'none', cursor: 'pointer' }} onClick={() => setSearch('')}>×</button>
+            )}
+          </div>
         </div>
       </div>
 
