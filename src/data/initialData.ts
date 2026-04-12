@@ -51,8 +51,8 @@ export const positions: Position[] = [
   { position_id: 15, name: 'Специалист по кадрам', personnel_type_id: 2 },
   { position_id: 16, name: 'Начальник отдела по сбыту продукции', personnel_type_id: 2 },
   { position_id: 17, name: 'Менеджер по сбыту продукции', personnel_type_id: 2 },
-  { position_id: 18, name: 'Главный технолог', personnel_type_id: 2 },
-  { position_id: 19, name: 'Технолог', personnel_type_id: 2 },
+  { position_id: 18, name: 'Главный технолог', personnel_type_id: 1 },
+  { position_id: 19, name: 'Технолог', personnel_type_id: 1 },
   { position_id: 20, name: 'Главный инженер', personnel_type_id: 2 },
   { position_id: 21, name: 'Инженер-механик', personnel_type_id: 2 },
   { position_id: 22, name: 'Начальник отдела маркетинга', personnel_type_id: 2 },
@@ -201,6 +201,16 @@ export const initialUsers: User[] = [
     user_id: 3, last_name: 'Сидоров', first_name: 'Пётр', middle_name: 'Николаевич',
     email: 'head@ecomenu.ru', phone: '+7 (900) 000-00-03', password: 'head123',
     is_active: true, role_id: 3, position_id: 24,
+  },
+  {
+    user_id: 4, last_name: 'Арбузов', first_name: 'Иван', middle_name: 'Петрович',
+    email: 'head2@ecomenu.ru', phone: '+7 (900) 000-00-04', password: 'head123',
+    is_active: true, role_id: 3, position_id: 18,
+  },
+  {
+    user_id: 5, last_name: 'Бабушкин', first_name: 'Михаил', middle_name: 'Алексеевич',
+    email: 'head3@ecomenu.ru', phone: '+7 (900) 000-00-05', password: 'head123',
+    is_active: true, role_id: 3, position_id: 5,
   },
 ];
 

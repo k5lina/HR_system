@@ -136,45 +136,37 @@ export default function RequestForm() {
         <div className={styles.autoRow}>
           <span className={styles.autoLabel}>Дата создания</span>
           <span className={styles.autoValue}>{displayDate}</span>
-        </div>
-        <div className={styles.autoRow}>
-          <span className={styles.autoLabel}>Руководитель отдела</span>
-          <span className={styles.autoValue}>{authorName}</span>
-        </div>
-      </div>
-
-      <div className={styles.formGrid}>
-        <div className={styles.fieldRow}>
-          <label className={styles.fieldRowLabel}>Требуемый опыт работы</label>
-          <input type="text" className={styles.fieldRowInput} value={experience} onChange={(e) => setExperience(e.target.value)} disabled={!canEdit} />
-        </div>
-        <div className={styles.fieldRow}>
-          <label className={styles.fieldRowLabel}>Отдел</label>
+          <span className={styles.autoLabel}>Отдел</span>
           <select className={styles.fieldRowSelect} value={deptId} onChange={(e) => { setDeptId(Number(e.target.value)); setDpId(0); }} disabled={!canEdit}>
-            <option value={0}>Отдел</option>
+            <option value={0}>—</option>
             {visibleDepartments.map((d) => (
               <option key={d.department_id} value={d.department_id}>{d.name}</option>
             ))}
           </select>
         </div>
-        <div className={styles.fieldRow}>
-          <label className={styles.fieldRowLabel}>Тип занятости</label>
-          <select className={styles.fieldRowSelect} value={employmentTypeId} onChange={(e) => setEmploymentTypeId(Number(e.target.value))} disabled={!canEdit}>
-            {employmentTypes.map((et) => (
-              <option key={et.employment_type_id} value={et.employment_type_id}>{et.name}</option>
-            ))}
-          </select>
-        </div>
-        <div className={styles.fieldRow}>
-          <label className={styles.fieldRowLabel}>Должность</label>
+        <div className={styles.autoRow}>
+          <span className={styles.autoLabel}>Руководитель отдела</span>
+          <span className={styles.autoValue}>{authorName}</span>
+          <span className={styles.autoLabel}>Должность</span>
           <select className={styles.fieldRowSelect} value={dpId} onChange={(e) => setDpId(Number(e.target.value))} disabled={!canEdit || !deptId}>
-            <option value={0}>Должность</option>
+            <option value={0}>—</option>
             {filteredDps.map((dp) => {
               const pos = positions.find((p) => p.position_id === dp.position_id);
               return <option key={dp.department_position_id} value={dp.department_position_id}>{pos?.name}</option>;
             })}
           </select>
         </div>
+      </div>
+
+      <div className={styles.autoRow} style={{ marginBottom: '3rem' }}>
+        <span className={styles.autoLabel}>Требуемый опыт работы</span>
+        <input type="text" className={styles.fieldRowInput} style={{ width: '80px', flex: 'none' }} value={experience} onChange={(e) => setExperience(e.target.value)} disabled={!canEdit} />
+        <span className={styles.autoLabel}>Тип занятости</span>
+        <select className={styles.fieldRowSelect} value={employmentTypeId} onChange={(e) => setEmploymentTypeId(Number(e.target.value))} disabled={!canEdit}>
+          {employmentTypes.map((et) => (
+            <option key={et.employment_type_id} value={et.employment_type_id}>{et.name}</option>
+          ))}
+        </select>
       </div>
 
       <div className={styles.formBlock}>

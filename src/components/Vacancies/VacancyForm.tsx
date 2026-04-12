@@ -130,27 +130,26 @@ export default function VacancyForm() {
         <div className={styles.autoRow}>
           <span className={styles.autoLabel}>Дата создания</span>
           <span className={styles.autoValue}>{displayDate}</span>
+          <span className={styles.autoLabel}>Отдел</span>
+          <span className={styles.autoValue}>{linkedDept?.name ?? '—'}</span>
         </div>
         <div className={styles.autoRow}>
           <span className={styles.autoLabel}>Руководитель отдела</span>
           <span className={styles.autoValue}>{authorName}</span>
-        </div>
-        <div className={styles.autoRow}>
-          <span className={styles.autoLabel}>Отдел</span>
-          <span className={styles.autoValue}>{linkedDept?.name ?? '—'}</span>
-          <span className={styles.autoLabel} style={{ marginLeft: '3rem' }}>Должность</span>
+          <span className={styles.autoLabel}>Должность</span>
           <span className={styles.autoValue}>{linkedPos?.name ?? '—'}</span>
         </div>
       </div>
 
       <div className={styles.sectionLabel}>Информация в публикации</div>
 
-      <div className={styles.formGrid} style={{ marginBottom: '1.5rem' }}>
+      <div className={styles.formGrid} style={{ marginBottom: '1.5rem', maxWidth: '800px' }}>
         <div className={styles.fieldRow}>
           <label className={styles.fieldRowLabel}>Требуемый опыт работы</label>
           <input
             type="text"
             className={styles.fieldRowInput}
+            style={{ width: '80px', flex: 'none' }}
             value={experience}
             onChange={(e) => setExperience(e.target.value)}
           />
@@ -187,7 +186,7 @@ export default function VacancyForm() {
         </div>
       </div>
 
-      <div className={styles.formGrid}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '2rem 4rem' }}>
         <div className={styles.formBlock} style={{ marginBottom: 0 }}>
           <label className={styles.blockLabel}>Обязанности</label>
           <textarea
@@ -206,16 +205,15 @@ export default function VacancyForm() {
             onChange={(e) => setRequirements(e.target.value)}
           />
         </div>
-      </div>
-
-      <div className={styles.formBlock} style={{ marginTop: '1.5rem' }}>
-        <label className={styles.blockLabel}>Условия работы</label>
-        <textarea
-          className={styles.blockTextarea}
-          style={{ height: '100px' }}
-          value={workConditions}
-          onChange={(e) => setWorkConditions(e.target.value)}
-        />
+        <div className={styles.formBlock} style={{ marginBottom: 0 }}>
+          <label className={styles.blockLabel}>Условия работы</label>
+          <textarea
+            className={styles.blockTextarea}
+            style={{ height: '200px' }}
+            value={workConditions}
+            onChange={(e) => setWorkConditions(e.target.value)}
+          />
+        </div>
       </div>
     </div>
   );

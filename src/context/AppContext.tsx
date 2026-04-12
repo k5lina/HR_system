@@ -20,7 +20,7 @@ import {
  * Версия данных. Меняй эту строку каждый раз, когда обновляешь initialData.ts —
  * при несовпадении все hr_* ключи в localStorage будут очищены и пересеяны из initialData.
  */
-const DATA_VERSION = 'v9';
+const DATA_VERSION = 'v10';
 
 // Выполняется один раз при загрузке модуля (до React-рендера).
 // Если версия изменилась — очищаем все hr_* ключи, чтобы usePersisted взял свежий initialData.

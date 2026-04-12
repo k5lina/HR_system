@@ -130,12 +130,12 @@ export default function MainInterviewForm() {
         <div className={styles.autoRow}>
           <span className={styles.autoLabel}>ФИО кандидата</span>
           <span className={styles.autoValue}>{candidateName}</span>
-          <span className={styles.autoLabel} style={{ marginLeft: '3rem' }}>Должность</span>
+          <span className={styles.autoLabel}>Должность</span>
           <span className={styles.autoValue}>{positionName}</span>
-          <span className={styles.autoLabel} style={{ marginLeft: '3rem' }}>Руководитель</span>
-          <span className={styles.autoValue}>{headName}</span>
         </div>
         <div className={styles.autoRow}>
+          <span className={styles.autoLabel}>Руководитель</span>
+          <span className={styles.autoValue}>{headName}</span>
           <span className={styles.autoLabel}>Дата и время начала</span>
           <input
             type="datetime-local"
