@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import {
-  fmtInterviewId, fmtAnalysisId,
+  nextId, fmtInterviewId, fmtAnalysisId,
   fmtSecurityCheckId, fmtMedicalCheckId, fmtOfferId,
 } from '../../utils';
 import styles from '../Requests/Requests.module.css';
@@ -214,18 +214,33 @@ export default function SelectionPage() {
         }));
       }
       case 'suitable': {
-        const list = candidates.filter(
-          (c) => c.stage_id === 3 && headPubIds.has(c.publication_id),
-        );
-        return list.map((c) => ({
-          id: c.candidate_id,
-          candidateId: c.candidate_id,
-          date: '',
-          status: '—',
-          openRoute: `/selection/${c.candidate_id}/main-interview`,
-          canDelete: false,
-          displayId: '—',
-        }));
+        // Show only candidates at stage 3 whose main interview was approved (status 2)
+        // and who have not been rejected.
+        const list = candidates.filter((c) => {
+          if (c.stage_id !== 3 || !headPubIds.has(c.publication_id)) return false;
+          if (c.rejection_reason_id) return false;
+          const mainInterview = interviews.find(
+            (i) => i.candidate_id === c.candidate_id && i.stage_id === 3,
+          );
+          return mainInterview?.interview_status_id === 2;
+        });
+        return list.map((c) => {
+          const mainInterview = interviews.find(
+            (i) => i.candidate_id === c.candidate_id && i.stage_id === 3,
+          );
+          const statusName = mainInterview
+            ? (interviewStatuses.find((s) => s.interview_status_id === mainInterview.interview_status_id)?.name ?? '—')
+            : '—';
+          return {
+            id: c.candidate_id,
+            candidateId: c.candidate_id,
+            date: '',
+            status: statusName,
+            openRoute: `/candidates/${c.candidate_id}`,
+            canDelete: false,
+            displayId: '—',
+          };
+        });
       }
       default:
         return [];
@@ -298,6 +313,25 @@ export default function SelectionPage() {
     setStatusFilter('');
     setDeptFilter(0);
     setDateSortDir('desc');
+  }
+
+  function handleSendToSecurity(candidateId: number) {
+    if (!window.confirm('Отправить кандидата на проверку в Службу безопасности?')) return;
+    const now = new Date().toISOString();
+    setSecurityChecks((prev) => {
+      if (prev.some((s) => s.candidate_id === candidateId)) return prev;
+      return [
+        ...prev,
+        {
+          security_check_id: nextId(prev, 'security_check_id'),
+          created_at: now,
+          candidate_id: candidateId,
+        },
+      ];
+    });
+    setCandidates((prev) =>
+      prev.map((c) => c.candidate_id === candidateId ? { ...c, stage_id: 4 } : c),
+    );
   }
 
   function handleDelete(row: DocRow) {
@@ -531,6 +565,17 @@ export default function SelectionPage() {
                           <path d="M14.121 4.379a3 3 0 00-4.242 0L3 11.243v4.242h4.242l6.879-6.879a3 3 0 000-4.243zM10.5 7.5l2.25 2.25" />
                         </svg>
                       </Link>
+                      {activeStage === 'suitable' && (
+                        <button
+                          className={styles.actionIcon}
+                          title="Отправить на проверку в СБ"
+                          onClick={() => handleSendToSecurity(row.candidateId)}
+                        >
+                          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                          </svg>
+                        </button>
+                      )}
                       {row.canDelete && (
                         <button
                           className={styles.actionIcon}

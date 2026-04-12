@@ -1,6 +1,6 @@
 .stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 1.125rem;
   margin-bottom: 2rem;
 }
@@ -16,6 +16,8 @@
   box-shadow: var(--shadow-sm);
   transition: box-shadow 0.2s, transform 0.15s;
   cursor: default;
+  min-width: 160px;
+  width: 210px;
 }
 
 .statCard:hover {

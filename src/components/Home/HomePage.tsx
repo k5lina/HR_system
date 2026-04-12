@@ -11,7 +11,7 @@ const REPORTS = [
     desc: 'Конверсия по этапам отбора',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <path d="M3 4h18l-7 9v6l-4-2v-4L3 4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
+        <path d="M3 4h18l-7 9v6l-4-2v-4L3 4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -21,8 +21,8 @@ const REPORTS = [
     desc: 'Время на каждом этапе воронки',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8"/>
-        <path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -32,8 +32,8 @@ const REPORTS = [
     desc: 'Распределение отказов по причинам',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z" stroke="currentColor" strokeWidth="1.8"/>
-        <path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+        <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -94,11 +94,11 @@ export default function HomePage() {
     const q = search.toLowerCase();
     const result = activeVacancies.filter((vac) => {
       const req = requests.find((r) => r.request_id === vac.request_id);
-      const dp  = req ? departmentPositions.find((d) => d.department_position_id === req.department_position_id) : null;
+      const dp = req ? departmentPositions.find((d) => d.department_position_id === req.department_position_id) : null;
       if (deptFilter && dp?.department_id !== deptFilter) return false;
       if (!q) return true;
       const dept = dp ? departments.find((d) => d.department_id === dp.department_id)?.name ?? '' : '';
-      const pos  = dp ? positions.find((p) => p.position_id === dp.position_id)?.name ?? '' : '';
+      const pos = dp ? positions.find((p) => p.position_id === dp.position_id)?.name ?? '' : '';
       return dept.toLowerCase().includes(q) || pos.toLowerCase().includes(q) || vac.title.toLowerCase().includes(q);
     });
     return [...result].sort((a, b) => {
@@ -113,9 +113,9 @@ export default function HomePage() {
   function getVacancyInfo(vacancyId: number) {
     const vac = vacancies.find((v) => v.vacancy_id === vacancyId);
     const req = vac ? requests.find((r) => r.request_id === vac.request_id) : null;
-    const dp  = req ? departmentPositions.find((d) => d.department_position_id === req.department_position_id) : null;
+    const dp = req ? departmentPositions.find((d) => d.department_position_id === req.department_position_id) : null;
     const dept = dp ? departments.find((d) => d.department_id === dp.department_id)?.name ?? '—' : '—';
-    const pos  = dp ? positions.find((p) => p.position_id === dp.position_id)?.name ?? '—' : '—';
+    const pos = dp ? positions.find((p) => p.position_id === dp.position_id)?.name ?? '—' : '—';
     return { dept, pos };
   }
 
@@ -163,21 +163,46 @@ export default function HomePage() {
     );
   }
 
-  const statCards = [
-    { label: 'Заявок',                 value: requests.length,    accent: true  },
-    { label: 'Вакансий',               value: vacancies.length,   accent: false },
-    { label: 'Опубликованных вакансий',value: activeVacancies.length, accent: false },
-    { label: 'Собеседований',          value: interviews.length,  accent: false },
+  // ── Stat computations ──────────────────────────────────────────
+  const activePubVacancyIds = new Set(activePubs.map((p) => p.vacancy_id));
+
+  // Manager / Admin stats
+  const newRequestsCount = requests.filter((r) => r.request_status_id === 1).length;
+  const unpublishedVacsCount = vacancies.filter((v) => !activePubVacancyIds.has(v.vacancy_id)).length;
+  const activePublishedCount = activeVacancies.length;
+  const plannedInterviewsCount = interviews.filter((i) => i.interview_status_id === 1).length;
+
+  // Head stats — only their own requests that are not closed
+  const headOpenRequestsCount = requests.filter(
+    (r) => r.user_id === currentUser?.user_id && r.request_status_id !== 3 && r.request_status_id !== 4,
+  ).length;
+
+  const headPendingInterviewsCount = interviews.filter(
+    (i) => i.stage_id === 3 && i.user_id === currentUser?.user_id && i.interview_status_id === 1,
+  ).length;
+
+  const managerStatCards = [
+    { label: 'Новых заявок', value: newRequestsCount, accent: true },
+    { label: 'Неопубликованных вакансий', value: unpublishedVacsCount, accent: false },
+    { label: 'Активных публикаций', value: activePublishedCount, accent: false },
+    { label: 'Собеседований', value: plannedInterviewsCount, accent: false },
   ];
+
+  const headStatCards = [
+    { label: 'Открытых заявок', value: headOpenRequestsCount, accent: true },
+    { label: 'Собеседований', value: headPendingInterviewsCount, accent: false },
+  ];
+
+  const displayedStatCards = roleId === 3 ? headStatCards : managerStatCards;
 
   const showTable = roleId === 1 || roleId === 2;
   const navigate = useNavigate();
 
-  function renderAnalyticsHub(centered: boolean) {
+  function renderAnalyticsHub() {
     return (
-      <div className={centered ? styles.analyticsSectionCentered : styles.analyticsSection}>
+      <div className={styles.analyticsSection}>
         <div className={styles.analyticsSectionTitle}>Аналитика</div>
-        <div className={centered ? styles.analyticsGridCentered : styles.analyticsGrid}>
+        <div className={styles.analyticsGrid}>
           {REPORTS.map((r) => (
             <button key={r.path} className={styles.analyticsCard} onClick={() => navigate(r.path)}>
               <div className={styles.analyticsCardIcon}>{r.icon}</div>
@@ -193,19 +218,13 @@ export default function HomePage() {
   return (
     <div>
       <div className={styles.stats}>
-        {(roleId === 3
-          ? [statCards[0], statCards[3]]
-          : statCards
-        ).map((s) => (
+        {displayedStatCards.map((s) => (
           <div key={s.label} className={`${styles.statCard} ${s.accent ? styles.statAccent : ''}`}>
             <span className={styles.statLabel}>{s.label}</span>
             <span className={styles.statValue}>{s.value}</span>
           </div>
         ))}
       </div>
-
-      {/* Analytics hub for Head (role 3) — centered, no vacancy table */}
-      {roleId === 3 && renderAnalyticsHub(true)}
 
       {showTable && (
         <div className={styles.section}>
@@ -225,8 +244,8 @@ export default function HomePage() {
                 </select>
               )}
               <div className={styles.searchBox}>
-                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" style={{color:'var(--text-light)', flexShrink:0}}>
-                  <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" style={{ color: 'var(--text-light)', flexShrink: 0 }}>
+                  <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
                 </svg>
                 <input
                   className={styles.searchInput}
@@ -282,7 +301,7 @@ export default function HomePage() {
                       <div className={styles.actionsCell}>
                         <Link to={`/published/${vac.vacancy_id}`} className={styles.actionBtn} title="Открыть">
                           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                            <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                           </svg>
                         </Link>
                       </div>
@@ -299,8 +318,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Analytics hub for HR / Admin (roles 1, 2) — below the table */}
-      {showTable && renderAnalyticsHub(false)}
+      {renderAnalyticsHub()}
     </div>
   );
 }

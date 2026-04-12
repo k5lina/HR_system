@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import { nextId, fmtInterviewId } from '../../utils';
-
+import { fmtInterviewId } from '../../utils';
 import styles from '../Requests/Requests.module.css';
 
 export default function MainInterviewForm() {
@@ -13,7 +12,6 @@ export default function MainInterviewForm() {
   const {
     candidates, setCandidates,
     interviews, setInterviews,
-    securityChecks, setSecurityChecks,
     publications, vacancies, requests,
     departmentPositions, positions,
     rejectionReasons,
@@ -86,23 +84,10 @@ export default function MainInterviewForm() {
   }
 
   function handleApprove() {
+    // Mark interview as successfully conducted (status 2).
+    // Candidate stays at stage_id 3 → appears in head's "Подходящие кандидаты".
+    // Head will manually send them to security check from there.
     saveRecord(2);
-    // Auto-create security check if not yet exists
-    setSecurityChecks((prev) => {
-      if (prev.some((s) => s.candidate_id === cId)) return prev;
-      const now = new Date().toISOString();
-      return [
-        ...prev,
-        {
-          security_check_id: nextId(prev, 'security_check_id'),
-          created_at: now,
-          candidate_id: cId,
-        },
-      ];
-    });
-    setCandidates((prev) =>
-      prev.map((c) => c.candidate_id === cId ? { ...c, stage_id: 4 } : c),
-    );
     navigate(backTo);
   }
 
