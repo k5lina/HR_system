@@ -167,9 +167,13 @@ export default function SelectionPage() {
         }));
       }
       case 'main': {
-        const list = interviews.filter(
-          (i) => i.stage_id === 3 && (roleId !== 3 || i.user_id === userId),
-        );
+        const list = interviews.filter((i) => {
+          if (i.stage_id !== 3) return false;
+          if (roleId !== 3) return true; // менеджер и админ видят все
+          // руководитель видит интервью кандидатов своего отдела
+          const cand = candidates.find((c) => c.candidate_id === i.candidate_id);
+          return cand ? headPubIds.has(cand.publication_id) : false;
+        });
         return list.map((i) => ({
           id: i.interview_id,
           candidateId: i.candidate_id,
@@ -234,11 +238,13 @@ export default function SelectionPage() {
           return {
             id: c.candidate_id,
             candidateId: c.candidate_id,
-            date: '',
+            date: mainInterview?.scheduled_at ?? '',
             status: statusName,
             openRoute: `/candidates/${c.candidate_id}`,
             canDelete: false,
-            displayId: '—',
+            displayId: mainInterview
+              ? fmtInterviewId(mainInterview.interview_id, mainInterview.scheduled_at, 3)
+              : '—',
           };
         });
       }

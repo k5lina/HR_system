@@ -30,6 +30,14 @@ export default function CandidateProfile() {
   const [showHistory, setShowHistory] = useState(false);
 
   const candidate = candidates.find((c) => c.candidate_id === candidateId);
+
+  const [phone, setPhone] = useState(candidate?.phone ?? '');
+  const [birthDate, setBirthDate] = useState(candidate?.birth_date ?? '');
+  const [city, setCity] = useState(candidate?.city ?? '');
+  const [workExperience, setWorkExperience] = useState<string>(String(candidate?.work_experience ?? ''));
+  const [education, setEducation] = useState(candidate?.education ?? '');
+  const [resumeText, setResumeText] = useState(candidate?.resume_text ?? '');
+
   if (!candidate) {
     return (
       <div className={styles.section}>
@@ -89,6 +97,24 @@ export default function CandidateProfile() {
     );
     setShowRejectModal(false);
     navigate(backTo);
+  }
+
+  function handleSave() {
+    setCandidates((prev) =>
+      prev.map((c) =>
+        c.candidate_id === candidateId
+          ? {
+              ...c,
+              phone,
+              birth_date: birthDate,
+              city,
+              work_experience: workExperience !== '' ? Number(workExperience) : c.work_experience,
+              education,
+              resume_text: resumeText,
+            }
+          : c,
+      ),
+    );
   }
 
   // ─── History data ─────────────────────────────────────────────
@@ -191,13 +217,14 @@ export default function CandidateProfile() {
 
       {/* Toolbar */}
       <div className={styles.formToolbar}>
+        <button className={styles.btnSave} onClick={handleSave}>Сохранить запись</button>
         {isNewStage ? (
           <>
-            <button className={styles.btnSave} onClick={handleApprove}>Одобрить кандидата</button>
+            <button className={styles.btnSubmit} onClick={handleApprove}>Одобрить кандидата</button>
             <button className={styles.btnSubmit} onClick={() => setShowRejectModal(true)}>Отклонить кандидата</button>
           </>
         ) : (
-          <button className={styles.btnSave} onClick={() => setShowHistory(true)}>
+          <button className={styles.btnSubmit} onClick={() => setShowHistory(true)}>
             Посмотреть историю отбора
           </button>
         )}
@@ -209,40 +236,44 @@ export default function CandidateProfile() {
           <span className={styles.autoLabel}>Текущий этап отбора</span>
           <span className={styles.autoValue}>{stageName}</span>
           <span className={styles.autoLabel}>Дата рождения</span>
-          <span className={styles.autoValue}>
-            {candidate.birth_date ? new Date(candidate.birth_date).toLocaleDateString('ru-RU') : '—'}
-          </span>
+          <input type="date" className={styles.fieldRowInput} value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
         </div>
         <div className={styles.autoRow}>
           <span className={styles.autoLabel}>Должность</span>
           <span className={styles.autoValue}>{positionName}</span>
           <span className={styles.autoLabel}>Город проживания</span>
-          <span className={styles.autoValue}>{candidate.city}</span>
+          <input className={styles.fieldRowInput} value={city} onChange={(e) => setCity(e.target.value)} />
         </div>
         <div className={styles.autoRow}>
           <span className={styles.autoLabel}>Номер телефона</span>
-          <span className={styles.autoValue}>{candidate.phone}</span>
+          <input className={styles.fieldRowInput} value={phone} onChange={(e) => setPhone(e.target.value)} />
         </div>
         <div className={styles.autoRow}>
           <span className={styles.autoLabel}>Опыт работы</span>
-          <span className={styles.autoValue}>{candidate.work_experience} лет</span>
+          <input className={styles.fieldRowInput} style={{ width: '80px', flex: 'none' }} value={workExperience} onChange={(e) => setWorkExperience(e.target.value)} />
         </div>
       </div>
 
       {/* Education */}
       <div className={styles.formBlock} style={{ marginTop: '1.5rem' }}>
         <label className={styles.blockLabel}>Образование</label>
-        <div className={styles.blockTextarea} style={{ minHeight: '60px', cursor: 'default' }}>
-          {candidate.education || '—'}
-        </div>
+        <textarea
+          className={styles.blockTextarea}
+          style={{ height: '60px' }}
+          value={education}
+          onChange={(e) => setEducation(e.target.value)}
+        />
       </div>
 
       {/* Resume text */}
       <div className={styles.formBlock}>
         <label className={styles.blockLabel}>Текст резюме</label>
-        <div className={styles.blockTextarea} style={{ minHeight: '180px', cursor: 'default', whiteSpace: 'pre-wrap' }}>
-          {candidate.resume_text || 'заполняется автоматически'}
-        </div>
+        <textarea
+          className={styles.blockTextarea}
+          style={{ height: '180px', whiteSpace: 'pre-wrap' }}
+          value={resumeText}
+          onChange={(e) => setResumeText(e.target.value)}
+        />
       </div>
 
       {/* Download resume */}

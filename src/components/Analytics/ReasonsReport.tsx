@@ -150,8 +150,8 @@ export default function ReasonsReport() {
         <>
           <div className={styles.chartSection}>
             {pieData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={420}>
-                <PieChart>
+              <ResponsiveContainer width="100%" height={460}>
+                <PieChart margin={{ top: 40, right: 40, bottom: 20, left: 40 }}>
                   <Pie
                     data={pieData}
                     dataKey="value"
@@ -161,11 +161,11 @@ export default function ReasonsReport() {
                     outerRadius={160}
                     label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
                       const RADIAN = Math.PI / 180;
-                      const radius = innerRadius + (outerRadius - innerRadius) * 1.35;
+                      const radius = innerRadius + (outerRadius - innerRadius) * 1.4;
                       const x = cx + radius * Math.cos(-midAngle * RADIAN);
                       const y = cy + radius * Math.sin(-midAngle * RADIAN);
                       return percent > 0.03 ? (
-                        <text x={x} y={y} fill="var(--text-dark)" textAnchor={x > cx ? 'start' : 'end'} fontSize={11} fontWeight={600}>
+                        <text x={x} y={y} fill="var(--text-dark)" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={11} fontWeight={600}>
                           {`${(percent * 100).toFixed(0)}%`}
                         </text>
                       ) : null;

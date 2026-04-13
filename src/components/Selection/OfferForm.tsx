@@ -21,14 +21,7 @@ export default function OfferForm() {
   const candidate = candidates.find((c) => c.candidate_id === cId);
   const existing = jobOffers.find((o) => o.candidate_id === cId);
 
-  const [proposedSalary, setProposedSalary] = useState<string | number>(existing?.proposed_salary ?? '');
-  const [startDate, setStartDate] = useState(existing?.start_date ?? '');
-  const [contractTypeId, setContractTypeId] = useState(existing?.contract_type_id ?? (contractTypes[0]?.contract_type_id ?? 1));
-  const [notes, setNotes] = useState(existing?.notes ?? '');
-
-  const [showRejectModal, setShowRejectModal] = useState(false);
-
-  // ---- resolve meta ----
+  // ---- resolve meta (до useState, чтобы использовать в начальных значениях) ----
   const pub = candidate ? publications.find((p) => p.publication_id === candidate.publication_id) : null;
   const vacancy = pub ? vacancies.find((v) => v.vacancy_id === pub.vacancy_id) : null;
   const linkedRequest = vacancy ? requests.find((r) => r.request_id === vacancy.request_id) : null;
@@ -37,8 +30,17 @@ export default function OfferForm() {
     : null;
   const linkedPos = dp ? positions.find((p) => p.position_id === dp.position_id) : null;
   const linkedDept = dp ? departments.find((d) => d.department_id === dp.department_id) : null;
-
   const headUser = linkedRequest ? users.find((u) => u.user_id === linkedRequest.user_id) : null;
+
+  const [proposedSalary, setProposedSalary] = useState<string | number>(existing?.proposed_salary ?? '');
+  const [startDate, setStartDate] = useState(existing?.start_date ?? '');
+  const [contractTypeId, setContractTypeId] = useState(existing?.contract_type_id ?? (contractTypes[0]?.contract_type_id ?? 1));
+  const [notes, setNotes] = useState(existing?.notes ?? '');
+  const [workSchedule, setWorkSchedule] = useState(existing?.work_schedule ?? vacancy?.work_schedule ?? '');
+  const [responsibilities, setResponsibilities] = useState(existing?.responsibilities ?? vacancy?.responsibilities ?? '');
+  const [workConditions, setWorkConditions] = useState(existing?.work_conditions ?? vacancy?.work_conditions ?? '');
+
+  const [showRejectModal, setShowRejectModal] = useState(false);
 
   const candidateName = candidate
     ? `${candidate.last_name} ${candidate.first_name}${candidate.middle_name ? ' ' + candidate.middle_name : ''}`
@@ -63,6 +65,9 @@ export default function OfferForm() {
       proposed_salary: Number(proposedSalary) || 0,
       start_date: startDate,
       notes,
+      work_schedule: workSchedule,
+      responsibilities,
+      work_conditions: workConditions,
       candidate_id: cId,
       contract_type_id: contractTypeId,
       offer_status_id: statusId,
@@ -180,7 +185,12 @@ export default function OfferForm() {
         </div>
         <div className={styles.gridField}>
           <span className={styles.gridFieldLabel}>График работы</span>
-          <span className={styles.gridFieldValue}>{vacancy?.work_schedule ?? '—'}</span>
+          <input
+            type="text"
+            className={styles.gridFieldInput}
+            value={workSchedule}
+            onChange={(e) => setWorkSchedule(e.target.value)}
+          />
         </div>
       </div>
 
@@ -188,15 +198,19 @@ export default function OfferForm() {
       <div className={styles.threeColGrid}>
         <div className={styles.interviewBlock}>
           <span className={styles.interviewBlockLabel}>Обязанности</span>
-          <div className={styles.interviewTextarea} style={{ overflowY: 'auto', cursor: 'default' }}>
-            {vacancy?.responsibilities ?? '—'}
-          </div>
+          <textarea
+            className={styles.interviewTextarea}
+            value={responsibilities}
+            onChange={(e) => setResponsibilities(e.target.value)}
+          />
         </div>
         <div className={styles.interviewBlock}>
           <span className={styles.interviewBlockLabel}>Условия работы</span>
-          <div className={styles.interviewTextarea} style={{ overflowY: 'auto', cursor: 'default' }}>
-            {vacancy?.work_conditions ?? '—'}
-          </div>
+          <textarea
+            className={styles.interviewTextarea}
+            value={workConditions}
+            onChange={(e) => setWorkConditions(e.target.value)}
+          />
         </div>
         <div className={styles.interviewBlock}>
           <span className={styles.interviewBlockLabel}>Заметки по обсуждению</span>

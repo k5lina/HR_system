@@ -495,7 +495,7 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 555-67-89',
     city: 'Москва',
     education: 'Среднее профессиональное',
-    publication_id: 1,
+    publication_id: 9,
     stage_id: 1,
   },
   {
@@ -508,7 +508,7 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 555-78-90',
     city: 'Москва',
     education: 'Высшее техническое',
-    publication_id: 1,
+    publication_id: 9,
     stage_id: 2,
   },
   {
@@ -521,7 +521,7 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 555-89-01',
     city: 'Москва',
     education: 'Высшее экономическое',
-    publication_id: 1,
+    publication_id: 9,
     stage_id: 4,
   },
   {
@@ -534,7 +534,7 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 555-90-12',
     city: 'Москва',
     education: 'Высшее, МГТУ им. Баумана',
-    publication_id: 1,
+    publication_id: 9,
     stage_id: 3,
   },
   {
@@ -547,7 +547,7 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 555-01-23',
     city: 'Москва',
     education: 'Высшее техническое',
-    publication_id: 1,
+    publication_id: 9,
     stage_id: 2,
   },
   {
@@ -560,7 +560,7 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 555-12-34',
     city: 'Санкт-Петербург',
     education: 'Высшее, СПбГУ',
-    publication_id: 1,
+    publication_id: 9,
     stage_id: 1,
   },
   {
@@ -573,7 +573,7 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 555-23-45',
     city: 'Москва',
     education: 'Высшее экономическое',
-    publication_id: 1,
+    publication_id: 9,
     stage_id: 6,
   },
   {
@@ -586,8 +586,9 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 555-34-56',
     city: 'Москва',
     education: 'Высшее экономическое',
-    publication_id: 1,
+    publication_id: 9,
     stage_id: 2,
+    rejection_reason_id: 2, // Неуспешное интервью
   },
   {
     candidate_id: 14,
@@ -612,7 +613,7 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 555-56-78',
     city: 'Москва',
     education: 'Высшее экономическое',
-    publication_id: 1,
+    publication_id: 9,
     stage_id: 3,
   },
   {
@@ -625,8 +626,9 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 555-67-89',
     city: 'Москва',
     education: 'Высшее маркетинговое',
-    publication_id: 1,
+    publication_id: 9,
     stage_id: 2,
+    rejection_reason_id: 5, // Некорректная медкнижка
   },
   {
     candidate_id: 17,
@@ -638,8 +640,9 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 555-78-90',
     city: 'Москва',
     education: 'Высшее, ВШЭ',
-    publication_id: 1,
+    publication_id: 9,
     stage_id: 1,
+    rejection_reason_id: 1, // Несоответствие вакансии
   },
   {
     candidate_id: 18,
@@ -651,8 +654,9 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 555-89-01',
     city: 'Москва',
     education: 'Высшее маркетинговое',
-    publication_id: 8,
+    publication_id: 9,
     stage_id: 3,
+    rejection_reason_id: 7, // Невыполнение условий оформления медкнижки
   },
   {
     candidate_id: 19,
@@ -664,7 +668,7 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 555-90-12',
     city: 'Красногорск',
     education: 'Высшее, РАНХиГС',
-    publication_id: 8,
+    publication_id: 9,
     stage_id: 1,
   },
   {
@@ -677,8 +681,9 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 600-11-22',
     city: 'Москва',
     education: 'Среднее профессиональное, Московский технологический колледж',
-    publication_id: 1,
+    publication_id: 9,
     stage_id: 1,
+    rejection_reason_id: 1, // Несоответствие вакансии
   },
   {
     candidate_id: 22,
@@ -690,8 +695,9 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 600-22-33',
     city: 'Санкт-Петербург',
     education: 'Высшее, СПбГПУ, информационные технологии',
-    publication_id: 3,
-    stage_id: 1,
+    publication_id: 9,
+    stage_id: 2,
+    rejection_reason_id: 2, // Неуспешное интервью
   },
   {
     candidate_id: 23,
@@ -703,8 +709,9 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 600-33-44',
     city: 'Москва',
     education: 'Высшее экономическое, РЭУ им. Плеханова',
-    publication_id: 5,
-    stage_id: 1,
+    publication_id: 9,
+    stage_id: 3,
+    rejection_reason_id: 3, // Неуспешное собеседование
   },
   {
     candidate_id: 24,
@@ -716,8 +723,9 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 600-44-55',
     city: 'Москва',
     education: 'Высшее, ВШЭ, маркетинг',
-    publication_id: 7,
-    stage_id: 1,
+    publication_id: 9,
+    stage_id: 4,
+    rejection_reason_id: 4, // Неуспешная проверка СБ
   },
   {
     candidate_id: 25,
@@ -729,8 +737,9 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 600-55-66',
     city: 'Красногорск',
     education: 'Высшее, МГТУ им. Баумана',
-    publication_id: 4,
-    stage_id: 1,
+    publication_id: 9,
+    stage_id: 5,
+    rejection_reason_id: 6, // Неуспешный медосмотр
   },
   {
     candidate_id: 20,
@@ -742,7 +751,7 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 555-01-23',
     city: 'Москва',
     education: 'Среднее специальное',
-    publication_id: 3,
+    publication_id: 9,
     stage_id: 5,
   },
   {
@@ -755,7 +764,7 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 700-11-22',
     city: 'Москва',
     education: 'Среднее профессиональное, Пищевой колледж №33',
-    publication_id: 2,
+    publication_id: 9,
     stage_id: 1,
   },
   {
@@ -768,7 +777,7 @@ export const initialCandidates: Candidate[] = [
     phone: '+7 (916) 700-22-33',
     city: 'Химки',
     education: 'Высшее, МГУПП, технология пищевых продуктов',
-    publication_id: 1,
+    publication_id: 9,
     stage_id: 1,
   },
   {
@@ -1248,6 +1257,7 @@ export const initialInterviews: Interview[] = [
     interview_status_id: 2,
     user_id: 2,
   },
+
 ];
 
 export const initialSecurityChecks: SecurityCheck[] = [

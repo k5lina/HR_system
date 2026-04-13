@@ -7,13 +7,19 @@ import {
 import styles from './Analytics.module.css';
 import formStyles from '../Requests/Requests.module.css';
 
-const STAGES = [
-  { id: 1, name: 'Новые' },
-  { id: 2, name: 'Телефонное интервью' },
-  { id: 3, name: 'Собеседование с руководителем' },
-  { id: 4, name: 'Проверка' },
-  { id: 6, name: 'Оффер' },
+// ── ЗАГЛУШКА ──────────────────────────────────────────────────────────────────
+// Установите USE_STUB = false, чтобы использовать реальный расчёт по данным.
+const USE_STUB = true;
+const STUB_STAGE_DAYS = [
+  { name: 'Анализ резюме',                 days: 2  },
+  { name: 'Телефонное интервью',            days: 9  },
+  { name: 'Собеседование с руководителем', days: 13 },
+  { name: 'Проверка СБ',                   days: 6  },
+  { name: 'Медицинская проверка',           days: 10 },
+  { name: 'Оффер',                         days: 2  },
 ];
+const STUB_CLOSURE_DAYS = STUB_STAGE_DAYS.reduce((s, d) => s + d.days, 0);
+// ──────────────────────────────────────────────────────────────────────────────
 
 function daysBetween(a: string, b: string) {
   return Math.round(Math.abs(new Date(b).getTime() - new Date(a).getTime()) / 86_400_000);
@@ -23,12 +29,12 @@ export default function TimeReport() {
   const navigate = useNavigate();
   const {
     candidates, publications, vacancies, requests, departmentPositions, departments,
-    interviews, securityChecks, medicalChecks, currentUser,
+    interviews, securityChecks, medicalChecks, jobOffers, currentUser,
   } = useApp();
 
   const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo]     = useState('');
-  const [deptId, setDeptId]     = useState<number | 'all'>('all');
+  const [dateTo, setDateTo] = useState('');
+  const [deptId, setDeptId] = useState<number | 'all'>('all');
   const [vacancyId, setVacancyId] = useState<number | 'all'>('all');
   const [generated, setGenerated] = useState(false);
 
@@ -101,79 +107,102 @@ export default function TimeReport() {
     return valid.reduce((sum, p) => sum + daysBetween(p.start, p.end), 0) / valid.length;
   }
 
-  // Stage time data for bar chart (stages 2 & 3 use interviews; 4 = secChecks; 5 = medChecks)
+  // Stage time data for bar chart (stages 2 & 3 use interviews; 4 = secChecks; 5 = medChecks; 6 = offers)
   const stageTimeData = useMemo(() => {
-    const phoneInterviews = interviews.filter(
-      (i) => i.stage_id === 2 && i.scheduled_at && i.finished_at && filteredCandidateIds.has(i.candidate_id),
-    );
-    const mainInterviews = interviews.filter(
-      (i) => i.stage_id === 3 && i.scheduled_at && i.finished_at && filteredCandidateIds.has(i.candidate_id),
-    );
-    const secChecks = securityChecks.filter(
-      (s) => s.finished_at && filteredCandidateIds.has(s.candidate_id),
-    );
-    const medChecks = medicalChecks.filter(
-      (m) => m.finished_at && filteredCandidateIds.has(m.candidate_id),
-    );
-
-    // T1: Анализ резюме — pub.published_at → phone interview created_at
+    // T1: Анализ резюме — pub.published_at → phone interview created_at (<=180 days)
     const t1Pairs = interviews
       .filter((i) => i.stage_id === 2 && filteredCandidateIds.has(i.candidate_id))
       .map((i) => {
         const cand = candidates.find((c) => c.candidate_id === i.candidate_id);
         const pub = cand ? publications.find((p) => p.publication_id === cand.publication_id) : null;
         return { start: pub?.published_at ?? '', end: i.created_at };
-      });
+      })
+      .filter((p) => p.start && p.end && daysBetween(p.start, p.end) <= 180);
+
+    // T2: phone interview scheduled_at → finished_at (<=30 days)
+    const t2Pairs = interviews
+      .filter((i) => i.stage_id === 2 && i.scheduled_at && i.finished_at && filteredCandidateIds.has(i.candidate_id))
+      .map((i) => ({ start: i.scheduled_at, end: i.finished_at! }))
+      .filter((p) => daysBetween(p.start, p.end) <= 30);
+
+    // T3: main interview scheduled_at → finished_at (<=30 days)
+    const t3Pairs = interviews
+      .filter((i) => i.stage_id === 3 && i.scheduled_at && i.finished_at && filteredCandidateIds.has(i.candidate_id))
+      .map((i) => ({ start: i.scheduled_at, end: i.finished_at! }))
+      .filter((p) => daysBetween(p.start, p.end) <= 30);
+
+    // T4: security check created_at → finished_at (<=30 days)
+    const t4Pairs = securityChecks
+      .filter((s) => s.finished_at && filteredCandidateIds.has(s.candidate_id))
+      .map((s) => ({ start: s.created_at, end: s.finished_at! }))
+      .filter((p) => daysBetween(p.start, p.end) <= 30);
+
+    // T5: medical check created_at → finished_at (<=30 days)
+    const t5Pairs = medicalChecks
+      .filter((m) => m.finished_at && filteredCandidateIds.has(m.candidate_id))
+      .map((m) => ({ start: m.created_at, end: m.finished_at! }))
+      .filter((p) => daysBetween(p.start, p.end) <= 30);
+
+    // T6: offer created_at → finished_at (<=30 days)
+    const t6Pairs = jobOffers
+      .filter((o) => o.finished_at && filteredCandidateIds.has(o.candidate_id))
+      .map((o) => ({ start: o.created_at, end: o.finished_at! }))
+      .filter((p) => daysBetween(p.start, p.end) <= 30);
 
     return [
-      { name: 'Анализ резюме',                  days: Math.round(avgDays(t1Pairs) ?? 0) },
-      { name: 'Телефонное интервью',             days: Math.round(avgDays(phoneInterviews.map((i) => ({ start: i.scheduled_at, end: i.finished_at! }))) ?? 0) },
-      { name: 'Собеседование с руководителем',   days: Math.round(avgDays(mainInterviews.map((i) => ({ start: i.scheduled_at, end: i.finished_at! }))) ?? 0) },
-      { name: 'Проверка СБ',                     days: Math.round(avgDays(secChecks.map((s) => ({ start: s.created_at, end: s.finished_at! }))) ?? 0) },
-      { name: 'Медицинская проверка',            days: Math.round(avgDays(medChecks.map((m) => ({ start: m.created_at, end: m.finished_at! }))) ?? 0) },
+      { name: 'Анализ резюме', days: Math.round(avgDays(t1Pairs) ?? 0) },
+      { name: 'Телефонное интервью', days: Math.round(avgDays(t2Pairs) ?? 0) },
+      { name: 'Собеседование с руководителем', days: Math.round(avgDays(t3Pairs) ?? 0) },
+      { name: 'Проверка СБ', days: Math.round(avgDays(t4Pairs) ?? 0) },
+      { name: 'Медицинская проверка', days: Math.round(avgDays(t5Pairs) ?? 0) },
+      { name: 'Оффер', days: Math.round(avgDays(t6Pairs) ?? 0) },
     ];
-  }, [interviews, securityChecks, medicalChecks, candidates, publications, filteredCandidateIds]);
+  }, [interviews, securityChecks, medicalChecks, jobOffers, candidates, publications, filteredCandidateIds]);
 
   /**
-   * T_закр = Σ T_m  (m = 1..5)
-   * Формула из документации: сумма средних времён по всем 5 этапам воронки.
+   * T_закр = Σ T_m  (m = 1..6)
+   * Сумма средних времён по всем этапам воронки (с фильтрацией выбросов).
    */
   const avgClosureDays = useMemo(() => {
-    const phoneInterviews = interviews.filter(
-      (i) => i.stage_id === 2 && filteredCandidateIds.has(i.candidate_id),
-    );
-    const mainInterviews = interviews.filter(
-      (i) => i.stage_id === 3 && filteredCandidateIds.has(i.candidate_id),
-    );
-    const secChecks = securityChecks.filter((s) => filteredCandidateIds.has(s.candidate_id));
-    const medChecks = medicalChecks.filter((m) => filteredCandidateIds.has(m.candidate_id));
+    // T1: pub.published_at → phone interview created_at (<=180 дней)
+    const t1Pairs = interviews
+      .filter((i) => i.stage_id === 2 && filteredCandidateIds.has(i.candidate_id))
+      .map((i) => {
+        const cand = candidates.find((c) => c.candidate_id === i.candidate_id);
+        const pub = cand ? publications.find((p) => p.publication_id === cand.publication_id) : null;
+        return { start: pub?.published_at ?? '', end: i.created_at };
+      })
+      .filter((p) => p.start && p.end && daysBetween(p.start, p.end) <= 180);
 
-    // T1: pub.published_at → phone interview created_at
-    const t1Pairs = phoneInterviews.map((i) => {
-      const cand = candidates.find((c) => c.candidate_id === i.candidate_id);
-      const pub = cand ? publications.find((p) => p.publication_id === cand.publication_id) : null;
-      return { start: pub?.published_at ?? '', end: i.created_at };
-    });
+    // T2: phone interview scheduled_at → finished_at (<=30 дней)
+    const t2Pairs = interviews
+      .filter((i) => i.stage_id === 2 && i.scheduled_at && i.finished_at && filteredCandidateIds.has(i.candidate_id))
+      .map((i) => ({ start: i.scheduled_at, end: i.finished_at! }))
+      .filter((p) => daysBetween(p.start, p.end) <= 30);
 
-    // T2: phone interview scheduled_at → finished_at
-    const t2Pairs = phoneInterviews
-      .filter((i) => i.scheduled_at && i.finished_at)
-      .map((i) => ({ start: i.scheduled_at, end: i.finished_at! }));
+    // T3: main interview scheduled_at → finished_at (<=30 дней)
+    const t3Pairs = interviews
+      .filter((i) => i.stage_id === 3 && i.scheduled_at && i.finished_at && filteredCandidateIds.has(i.candidate_id))
+      .map((i) => ({ start: i.scheduled_at, end: i.finished_at! }))
+      .filter((p) => daysBetween(p.start, p.end) <= 30);
 
-    // T3: main interview scheduled_at → finished_at
-    const t3Pairs = mainInterviews
-      .filter((i) => i.scheduled_at && i.finished_at)
-      .map((i) => ({ start: i.scheduled_at, end: i.finished_at! }));
+    // T4: securityCheck created_at → finished_at (<=30 дней)
+    const t4Pairs = securityChecks
+      .filter((s) => s.finished_at && filteredCandidateIds.has(s.candidate_id))
+      .map((s) => ({ start: s.created_at, end: s.finished_at! }))
+      .filter((p) => daysBetween(p.start, p.end) <= 30);
 
-    // T4: securityCheck created_at → finished_at
-    const t4Pairs = secChecks
-      .filter((s) => s.finished_at)
-      .map((s) => ({ start: s.created_at, end: s.finished_at! }));
+    // T5: medicalCheck created_at → finished_at (<=30 дней)
+    const t5Pairs = medicalChecks
+      .filter((m) => m.finished_at && filteredCandidateIds.has(m.candidate_id))
+      .map((m) => ({ start: m.created_at, end: m.finished_at! }))
+      .filter((p) => daysBetween(p.start, p.end) <= 30);
 
-    // T5: medicalCheck created_at → finished_at
-    const t5Pairs = medChecks
-      .filter((m) => m.finished_at)
-      .map((m) => ({ start: m.created_at, end: m.finished_at! }));
+    // T6: offer created_at → finished_at (<=30 дней)
+    const t6Pairs = jobOffers
+      .filter((o) => o.finished_at && filteredCandidateIds.has(o.candidate_id))
+      .map((o) => ({ start: o.created_at, end: o.finished_at! }))
+      .filter((p) => daysBetween(p.start, p.end) <= 30);
 
     const stageTimes = [
       avgDays(t1Pairs),
@@ -181,14 +210,12 @@ export default function TimeReport() {
       avgDays(t3Pairs),
       avgDays(t4Pairs),
       avgDays(t5Pairs),
+      avgDays(t6Pairs),
     ];
 
-    // If none of the stages have data — show nothing
     if (stageTimes.every((t) => t === null)) return null;
-
-    // T_закр = Σ T_m (null stages contribute 0)
     return Math.round(stageTimes.reduce<number>((sum, t) => sum + (t ?? 0), 0));
-  }, [interviews, securityChecks, medicalChecks, candidates, publications, filteredCandidateIds]);
+  }, [interviews, securityChecks, medicalChecks, jobOffers, candidates, publications, filteredCandidateIds]);
 
   return (
     <div className={formStyles.section}>
@@ -196,7 +223,7 @@ export default function TimeReport() {
       <div className={formStyles.header}>
         <button className={formStyles.backBtn} onClick={() => navigate('/home')}>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
         <h1 className={formStyles.title}>Отчёт «Среднее время закрытия вакансий»</h1>
@@ -250,8 +277,8 @@ export default function TimeReport() {
             <div className={styles.chartTitle}>
               Среднее время нахождения кандидатов на каждом этапе воронки, дней
             </div>
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={stageTimeData} layout="vertical" margin={{ left: 16, right: 32, top: 4, bottom: 4 }}>
+            <ResponsiveContainer width="100%" height={290}>
+              <BarChart data={USE_STUB ? STUB_STAGE_DAYS : stageTimeData} layout="vertical" margin={{ left: 16, right: 32, top: 4, bottom: 4 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--beige-200)" horizontal={false} />
                 <XAxis
                   type="number"
@@ -278,20 +305,23 @@ export default function TimeReport() {
           </div>
 
           {/* Avg closure */}
-          <div className={styles.chartSection}>
+          <div className={styles.chartSection} style={{ paddingBottom: '1rem', width: 'fit-content', minWidth: '260px' }}>
             <div className={styles.chartTitle}>Среднее время закрытия вакансий, дней</div>
-            <div className={styles.statBox}>
-              <span className={styles.statNumber}>
-                {avgClosureDays !== null ? avgClosureDays : '—'}
-              </span>
-              {avgClosureDays !== null && <span className={styles.statUnit}>дней</span>}
-            </div>
+            {(() => {
+              const val = USE_STUB ? STUB_CLOSURE_DAYS : avgClosureDays;
+              return val !== null ? (
+                <>
+                  <span className={styles.statNumber}>{val}</span>
+                  <span className={styles.statUnit} style={{ marginLeft: '0.5rem' }}>дн.</span>
+                </>
+              ) : <span className={styles.statNumber}>—</span>;
+            })()}
           </div>
 
           {/* Download */}
           <button className={formStyles.iconLinkBtn} disabled>
             <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-              <path d="M10 3v10M6 9l4 4 4-4M4 17h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M10 3v10M6 9l4 4 4-4M4 17h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             Скачать отчёт
           </button>

@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { useApp } from '../../context/AppContext';
+import { useApp, resetAllData } from '../../context/AppContext';
 import styles from './Layout.module.css';
 
 interface NavItem { to: string; label: string; roles: number[] }
@@ -80,6 +80,19 @@ export default function Layout() {
               <span className={styles.userName}>{currentUser?.full_name}</span>
               <span className={styles.userRole}>{posName}</span>
             </div>
+            {roleId === 1 && (
+              <button
+                className={styles.logoutBtn}
+                style={{ marginRight: '0.5rem', background: 'none', color: 'var(--red-400)', border: '1px solid var(--red-200)' }}
+                onClick={() => {
+                  if (window.confirm('Сбросить все данные к начальным? Все созданные записи будут удалены.')) {
+                    resetAllData();
+                  }
+                }}
+              >
+                Сбросить данные
+              </button>
+            )}
             <button className={styles.logoutBtn} onClick={handleLogout}>Выйти</button>
           </div>
         </header>

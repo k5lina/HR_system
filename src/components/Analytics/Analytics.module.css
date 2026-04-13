@@ -62,14 +62,14 @@
 }
 
 .reportMetaLabel {
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   color: var(--text-dark);
   white-space: nowrap;
 }
 
 .reportMetaValue {
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   color: var(--text-dark);
   border-bottom: 1px solid var(--text-dark);
@@ -103,7 +103,7 @@
   border: 1px solid var(--beige-200);
   border-radius: 6px;
   padding: 0.45rem 0.75rem;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-family: inherit;
   outline: none;
   background: var(--white);
@@ -115,7 +115,7 @@
   border: none;
   border-bottom: 1px solid var(--text-dark);
   padding: 0.25rem 0;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-family: inherit;
   outline: none;
   background: transparent;
@@ -132,7 +132,7 @@
 }
 
 .chartTitle {
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--text-dark);
   margin-bottom: 1.25rem;
@@ -173,7 +173,7 @@
 }
 
 .funnelRowLabel {
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text-dark);
 }
@@ -191,7 +191,7 @@
 }
 
 .funnelCell {
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text-dark);
   text-align: right;
@@ -200,10 +200,15 @@
 
 /* ── Time report ─────────────────────────────────────────── */
 .statBox {
-  display: flex;
+  display: inline-flex;
   align-items: baseline;
   gap: 0.5rem;
-  padding: 0.5rem 0;
+  padding: 0.75rem 1.5rem;
+  background: var(--white);
+  border: 1.5px solid var(--beige-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  width: fit-content;
 }
 
 .statNumber {

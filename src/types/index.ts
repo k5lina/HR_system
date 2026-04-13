@@ -228,6 +228,9 @@ export interface JobOffer {
   proposed_salary: number;
   start_date: string;
   notes?: string;
+  work_schedule?: string;
+  responsibilities?: string;
+  work_conditions?: string;
   candidate_id: number;
   contract_type_id: number;
   offer_status_id: number;

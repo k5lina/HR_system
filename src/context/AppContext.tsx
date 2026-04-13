@@ -16,22 +16,22 @@ import {
   initialSecurityChecks, initialMedicalChecks, initialJobOffers,
 } from '../data/initialData';
 
-/**
- * Версия данных. Меняй эту строку каждый раз, когда обновляешь initialData.ts —
- * при несовпадении все hr_* ключи в localStorage будут очищены и пересеяны из initialData.
- */
-const DATA_VERSION = 'v10';
-
-// Выполняется один раз при загрузке модуля (до React-рендера).
-// Если версия изменилась — очищаем все hr_* ключи, чтобы usePersisted взял свежий initialData.
+// Первичная инициализация: запускается один раз при первом открытии приложения.
+// При обновлении кода данные НЕ сбрасываются — пользовательские записи сохраняются.
 (function seedCheck() {
-  if (localStorage.getItem('hr_seed_version') !== DATA_VERSION) {
-    Object.keys(localStorage)
-      .filter((k) => k.startsWith('hr_'))
-      .forEach((k) => localStorage.removeItem(k));
-    localStorage.setItem('hr_seed_version', DATA_VERSION);
+  if (!localStorage.getItem('hr_seeded')) {
+    localStorage.setItem('hr_seeded', '1');
   }
 })();
+
+// Ручной сброс всех данных к начальным (вызывается явно через кнопку в интерфейсе).
+export function resetAllData() {
+  Object.keys(localStorage)
+    .filter((k) => k.startsWith('hr_'))
+    .forEach((k) => localStorage.removeItem(k));
+  localStorage.setItem('hr_seeded', '1');
+  window.location.reload();
+}
 
 function loadOrInit<T>(key: string, fallback: T): T {
   try {
