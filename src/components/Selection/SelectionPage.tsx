@@ -9,6 +9,25 @@ import styles from '../Requests/Requests.module.css';
 
 const PAGE_SIZE = 10;
 
+// ── ЗАГЛУШКА для вкладки «Собеседования с руководителем» ─────────────────────
+// Установите USE_STUB_MAIN = false, чтобы использовать реальные данные.
+const USE_STUB_MAIN = true;
+const STUB_MAIN_ROWS = [
+  { id: 14, candidateId: 14, displayId: '3-26-04-14', name: 'Фёдоров Максим Романович',   dept: 'Лаборатория',       pos: 'Технолог',                   date: '2026-04-16T14:00:00', status: 'Запланировано',    openRoute: '/candidates/33' },
+  { id: 12, candidateId: 12, displayId: '3-26-03-12', name: 'Степанов Максим Дмитриевич', dept: 'Лаборатория',       pos: 'Технолог',                   date: '2026-03-25T11:00:00', status: 'Проведено успешно', openRoute: '/candidates/60' },
+  { id: 84, candidateId: 84, displayId: '3-26-03-84', name: 'Волкова Анна Игоревна',      dept: 'Хлебобулочный цех', pos: 'Мастер хлебобулочного цеха', date: '2026-03-22T10:00:00', status: 'Проведено успешно', openRoute: '/candidates/61' },
+  { id: 83, candidateId: 83, displayId: '3-26-03-83', name: 'Морозов Иван Сергеевич',     dept: 'Хлебобулочный цех', pos: 'Мастер хлебобулочного цеха', date: '2026-03-20T15:00:00', status: 'Проведено успешно', openRoute: '/candidates/62' },
+];
+
+// ── ЗАГЛУШКА для вкладки «Подходящие кандидаты» (руководитель) ───────────────
+// Установите USE_STUB_SUITABLE = false, чтобы использовать реальные данные.
+const USE_STUB_SUITABLE = true;
+const STUB_SUITABLE_ROWS = [
+  { id: 14, candidateId: 14, displayId: '3-26-04-14', name: 'Фёдоров Максим Романович',   dept: 'Лаборатория', pos: 'Технолог', status: 'Проведено успешно', openRoute: '/candidates/33' },
+  { id: 12, candidateId: 12, displayId: '3-24-03-12', name: 'Степанов Максим Дмитриевич', dept: 'Лаборатория', pos: 'Технолог', status: 'Проведено успешно', openRoute: '/candidates/60' },
+];
+// ─────────────────────────────────────────────────────────────────────────────
+
 type StageKind = 'new' | 'phone' | 'main' | 'security' | 'medical' | 'offer' | 'suitable';
 
 interface StageDef {
@@ -534,35 +553,20 @@ export default function SelectionPage() {
             </tr>
           </thead>
           <tbody>
-            {paginated.map((row, idx) => {
-              const m = getCandidateMeta(row.candidateId);
-              return (
-                <tr key={`${activeStage}-${row.id}`}>
-                  <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
+            {USE_STUB_SUITABLE && activeStage === 'suitable'
+              ? STUB_SUITABLE_ROWS.map((row, idx) => (
+                <tr key={`stub-suitable-${row.id}`}>
+                  <td>{idx + 1}</td>
                   <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--text-light)' }}>
                     {row.displayId}
                   </td>
-                  <td>{m.name}</td>
-                  <td>{m.dept}</td>
-                  <td>{m.pos}</td>
-                  {showDateCol && (
-                    <td>
-                      {row.date
-                        ? new Date(row.date).toLocaleString('ru-RU', {
-                          day: '2-digit', month: '2-digit', year: 'numeric',
-                          hour: '2-digit', minute: '2-digit',
-                        })
-                        : '—'}
-                    </td>
-                  )}
+                  <td>{row.name}</td>
+                  <td>{row.dept}</td>
+                  <td>{row.pos}</td>
                   <td>
-                    {row.status !== '—' ? (
-                      <span className={`${styles.badge} ${getStatusClass(row.status)}`}>
-                        {row.status}
-                      </span>
-                    ) : (
-                      '—'
-                    )}
+                    <span className={`${styles.badge} ${getStatusClass(row.status)}`}>
+                      {row.status}
+                    </span>
                   </td>
                   <td>
                     <div className={styles.actionCell}>
@@ -571,34 +575,117 @@ export default function SelectionPage() {
                           <path d="M14.121 4.379a3 3 0 00-4.242 0L3 11.243v4.242h4.242l6.879-6.879a3 3 0 000-4.243zM10.5 7.5l2.25 2.25" />
                         </svg>
                       </Link>
-                      {activeStage === 'suitable' && (
-                        <button
-                          className={styles.actionIcon}
-                          title="Отправить на проверку в СБ"
-                          onClick={() => handleSendToSecurity(row.candidateId)}
-                        >
-                          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                          </svg>
-                        </button>
-                      )}
-                      {row.canDelete && (
-                        <button
-                          className={styles.actionIcon}
-                          title="Удалить"
-                          onClick={() => handleDelete(row)}
-                        >
-                          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path d="M4 7h16M10 11v6M14 11v6M5 7l1 14h12l1-14M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
-                          </svg>
-                        </button>
-                      )}
+                      <button className={styles.actionIcon} title="Отправить на проверку в СБ" onClick={() => {}}>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                      </button>
                     </div>
                   </td>
                 </tr>
-              );
-            })}
-            {paginated.length === 0 && (
+              ))
+              : USE_STUB_MAIN && activeStage === 'main'
+              ? STUB_MAIN_ROWS.map((row, idx) => (
+                <tr key={`stub-${row.id}`}>
+                  <td>{idx + 1}</td>
+                  <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--text-light)' }}>
+                    {row.displayId}
+                  </td>
+                  <td>{row.name}</td>
+                  <td>{row.dept}</td>
+                  <td>{row.pos}</td>
+                  <td>
+                    {new Date(row.date).toLocaleString('ru-RU', {
+                      day: '2-digit', month: '2-digit', year: 'numeric',
+                      hour: '2-digit', minute: '2-digit',
+                    })}
+                  </td>
+                  <td>
+                    <span className={`${styles.badge} ${getStatusClass(row.status)}`}>
+                      {row.status}
+                    </span>
+                  </td>
+                  <td>
+                    <div className={styles.actionCell}>
+                      <Link to={row.openRoute} className={styles.actionIcon} title="Открыть">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path d="M14.121 4.379a3 3 0 00-4.242 0L3 11.243v4.242h4.242l6.879-6.879a3 3 0 000-4.243zM10.5 7.5l2.25 2.25" />
+                        </svg>
+                      </Link>
+                      <button className={styles.actionIcon} title="Удалить" onClick={() => {}}>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path d="M4 7h16M10 11v6M14 11v6M5 7l1 14h12l1-14M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+              : paginated.map((row, idx) => {
+                const m = getCandidateMeta(row.candidateId);
+                return (
+                  <tr key={`${activeStage}-${row.id}`}>
+                    <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
+                    <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--text-light)' }}>
+                      {row.displayId}
+                    </td>
+                    <td>{m.name}</td>
+                    <td>{m.dept}</td>
+                    <td>{m.pos}</td>
+                    {showDateCol && (
+                      <td>
+                        {row.date
+                          ? new Date(row.date).toLocaleString('ru-RU', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit',
+                          })
+                          : '—'}
+                      </td>
+                    )}
+                    <td>
+                      {row.status !== '—' ? (
+                        <span className={`${styles.badge} ${getStatusClass(row.status)}`}>
+                          {row.status}
+                        </span>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                    <td>
+                      <div className={styles.actionCell}>
+                        <Link to={row.openRoute} className={styles.actionIcon} title="Открыть">
+                          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path d="M14.121 4.379a3 3 0 00-4.242 0L3 11.243v4.242h4.242l6.879-6.879a3 3 0 000-4.243zM10.5 7.5l2.25 2.25" />
+                          </svg>
+                        </Link>
+                        {activeStage === 'suitable' && (
+                          <button
+                            className={styles.actionIcon}
+                            title="Отправить на проверку в СБ"
+                            onClick={() => handleSendToSecurity(row.candidateId)}
+                          >
+                            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            </svg>
+                          </button>
+                        )}
+                        {row.canDelete && (
+                          <button
+                            className={styles.actionIcon}
+                            title="Удалить"
+                            onClick={() => handleDelete(row)}
+                          >
+                            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                              <path d="M4 7h16M10 11v6M14 11v6M5 7l1 14h12l1-14M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            {!USE_STUB_MAIN && !USE_STUB_SUITABLE && paginated.length === 0 && (
               <tr>
                 <td colSpan={colSpan} className={styles.empty}>
                   Записей нет

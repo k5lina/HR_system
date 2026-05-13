@@ -65,7 +65,7 @@
 .thSortActive .thSortIcon { opacity: 1; color: var(--red-400); }
 .table td {
   padding: 0.875rem 1.25rem;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   color: var(--text-dark);
   border-bottom: 1px solid var(--beige-100);

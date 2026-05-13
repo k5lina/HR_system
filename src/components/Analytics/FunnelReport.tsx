@@ -114,7 +114,7 @@ export default function FunnelReport() {
       ...s,
       count: filtered.filter((c) => c.stage_id >= s.id).length,
     })),
-  [filtered]);
+    [filtered]);
 
   const maxCount = stageCounts[0]?.count ?? 0;
 
@@ -124,7 +124,7 @@ export default function FunnelReport() {
       <div className={formStyles.header}>
         <button className={formStyles.backBtn} onClick={() => navigate('/home')}>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
         <h1 className={formStyles.title}>Отчёт «Воронка кандидатов»</h1>
@@ -173,7 +173,7 @@ export default function FunnelReport() {
       {/* Chart */}
       {generated && (
         <div className={styles.chartSection}>
-          {/* Header row */}
+          {/* Заголовок остаётся прежним */}
           <div className={styles.funnelHeader}>
             <div className={styles.funnelHeaderCell}>Этап</div>
             <div className={styles.funnelHeaderCell} style={{ textAlign: 'left' }}></div>
@@ -183,22 +183,30 @@ export default function FunnelReport() {
           </div>
 
           {stageCounts.map((stage, idx) => {
-            const barWidth = maxCount > 0 ? `${(stage.count / maxCount) * 100}%` : '0%';
+            const barWidthPercent = maxCount > 0 ? (stage.count / maxCount) * 100 : 0;
             const relConv = idx === 0
               ? 100
               : stageCounts[idx - 1].count > 0
-              ? Math.round((stage.count / stageCounts[idx - 1].count) * 100)
-              : 0;
+                ? Math.round((stage.count / stageCounts[idx - 1].count) * 100)
+                : 0;
             const absConv = stageCounts[0].count > 0
               ? Math.round((stage.count / stageCounts[0].count) * 100)
               : 0;
 
             return (
-              <div key={stage.id} className={styles.funnelRow}>
+              <div className={styles.funnelRow}>
                 <div className={styles.funnelRowLabel}>{stage.name}</div>
-                <div className={styles.funnelBarWrap}>
-                  <div className={styles.funnelBar} style={{ width: barWidth }} />
+
+                <div className={styles.funnelBarContainer}>
+                  <div
+                    className={styles.funnelBar}
+                    style={{
+                      width: `${(stage.count / maxCount) * 100}%`,
+                      marginLeft: `${(100 - (stage.count / maxCount) * 100) / 2}%` // центрируем вручную
+                    }}
+                  />
                 </div>
+
                 <div className={styles.funnelCell}>{stage.count}</div>
                 <div className={styles.funnelCell}>{relConv}%</div>
                 <div className={styles.funnelCell}>{absConv}%</div>
@@ -212,7 +220,7 @@ export default function FunnelReport() {
       {generated && (
         <button className={formStyles.iconLinkBtn} disabled>
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <path d="M10 3v10M6 9l4 4 4-4M4 17h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M10 3v10M6 9l4 4 4-4M4 17h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           Скачать отчёт
         </button>

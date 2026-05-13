@@ -11,12 +11,12 @@ import formStyles from '../Requests/Requests.module.css';
 // Установите USE_STUB = false, чтобы использовать реальный расчёт по данным.
 const USE_STUB = true;
 const STUB_STAGE_DAYS = [
-  { name: 'Анализ резюме',                 days: 2  },
-  { name: 'Телефонное интервью',            days: 9  },
+  { name: 'Анализ резюме', days: 2 },
+  { name: 'Телефонное интервью', days: 9 },
   { name: 'Собеседование с руководителем', days: 13 },
-  { name: 'Проверка СБ',                   days: 6  },
-  { name: 'Медицинская проверка',           days: 10 },
-  { name: 'Оффер',                         days: 2  },
+  { name: 'Проверка СБ', days: 6 },
+  { name: 'Медицинская проверка', days: 10 },
+  { name: 'Оффер', days: 2 },
 ];
 const STUB_CLOSURE_DAYS = STUB_STAGE_DAYS.reduce((s, d) => s + d.days, 0);
 // ──────────────────────────────────────────────────────────────────────────────
@@ -312,7 +312,7 @@ export default function TimeReport() {
               return val !== null ? (
                 <>
                   <span className={styles.statNumber}>{val}</span>
-                  <span className={styles.statUnit} style={{ marginLeft: '0.5rem' }}>дн.</span>
+                  <span className={styles.statUnit} style={{ marginLeft: '0.5rem' }}></span>
                 </>
               ) : <span className={styles.statNumber}>—</span>;
             })()}

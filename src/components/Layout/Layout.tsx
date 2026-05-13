@@ -5,22 +5,22 @@ import styles from './Layout.module.css';
 interface NavItem { to: string; label: string; roles: number[] }
 
 const NAV: NavItem[] = [
-  { to: '/home',       label: 'Главная',                    roles: [1, 2, 3] },
-  { to: '/requests',   label: 'Заявки на подбор персонала', roles: [1, 2, 3] },
-  { to: '/vacancies',  label: 'Вакансии',                   roles: [1, 2] },
-  { to: '/selection',  label: 'Отбор кандидатов',            roles: [1, 2, 3] },
-  { to: '/directories',label: 'Справочники',                roles: [1] },
+  { to: '/home', label: 'Главная', roles: [1, 2, 3] },
+  { to: '/requests', label: 'Заявки на подбор персонала', roles: [1, 2, 3] },
+  { to: '/vacancies', label: 'Вакансии', roles: [1, 2] },
+  { to: '/selection', label: 'Отбор кандидатов', roles: [1, 2, 3] },
+  { to: '/directories', label: 'Справочники', roles: [1] },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
-  '/home':        'Главная',
-  '/requests':    'Заявки на подбор персонала',
-  '/vacancies':   'Вакансии',
-  '/selection':   'Отбор кандидатов',
-  '/analytics/funnel':  'Аналитика',
-  '/analytics/time':    'Аналитика',
+  '/home': 'Главная',
+  '/requests': 'Заявки на подбор персонала',
+  '/vacancies': 'Вакансии',
+  '/selection': 'Отбор кандидатов',
+  '/analytics/funnel': 'Аналитика',
+  '/analytics/time': 'Аналитика',
   '/analytics/reasons': 'Аналитика',
-  '/analytics':         'Аналитика',
+  '/analytics': 'Аналитика',
   '/directories': 'Справочники',
 };
 
@@ -80,19 +80,7 @@ export default function Layout() {
               <span className={styles.userName}>{currentUser?.full_name}</span>
               <span className={styles.userRole}>{posName}</span>
             </div>
-            {roleId === 1 && (
-              <button
-                className={styles.logoutBtn}
-                style={{ marginRight: '0.5rem', background: 'none', color: 'var(--red-400)', border: '1px solid var(--red-200)' }}
-                onClick={() => {
-                  if (window.confirm('Сбросить все данные к начальным? Все созданные записи будут удалены.')) {
-                    resetAllData();
-                  }
-                }}
-              >
-                Сбросить данные
-              </button>
-            )}
+
             <button className={styles.logoutBtn} onClick={handleLogout}>Выйти</button>
           </div>
         </header>
@@ -101,5 +89,6 @@ export default function Layout() {
         </main>
       </div>
     </div>
+
   );
 }
