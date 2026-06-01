@@ -59,7 +59,7 @@ export default function SecurityCheckForm() {
   const resultLabel =
     result === true ? 'Прошёл' : result === false ? 'Не прошёл' : '—';
 
-  const backTo = pub ? `/published/${pub.vacancy_id}` : '/home';
+  const backTo = '/selection?stage=security';
 
   // ---- helpers ----
   function buildRecord(res?: boolean, finished?: boolean) {

@@ -52,7 +52,7 @@ export default function MedicalCheckForm() {
     : '—';
   const statusName = medicalCheckStatuses.find((s) => s.medical_check_status_id === statusId)?.name ?? '—';
 
-  const backTo = pub ? `/published/${pub.vacancy_id}` : '/home';
+  const backTo = '/selection?stage=medical';
 
   // ---- helpers ----
   function buildRecord(nextStatusId: number) {

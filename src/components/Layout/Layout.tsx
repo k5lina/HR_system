@@ -81,6 +81,7 @@ export default function Layout() {
               <span className={styles.userRole}>{posName}</span>
             </div>
 
+
             <button className={styles.logoutBtn} onClick={handleLogout}>Выйти</button>
           </div>
         </header>

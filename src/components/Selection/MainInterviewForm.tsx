@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import { fmtInterviewId } from '../../utils';
+import { fmtInterviewId, nextId } from '../../utils';
 import styles from '../Requests/Requests.module.css';
 
 export default function MainInterviewForm() {
@@ -47,7 +47,7 @@ export default function MainInterviewForm() {
     ? `${candidate.last_name} ${candidate.first_name}${candidate.middle_name ? ' ' + candidate.middle_name : ''}`
     : '—';
 
-  const backTo = pub ? `/published/${pub.vacancy_id}` : '/home';
+  const backTo = '/selection?stage=main';
 
   // ---- save ----
   function saveRecord(statusId: number) {
@@ -108,7 +108,7 @@ export default function MainInterviewForm() {
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={() => navigate(-1)}>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
         <h1 className={styles.title}>
@@ -150,10 +150,10 @@ export default function MainInterviewForm() {
       {/* Evaluation textarea — half width */}
       <div style={{ marginTop: '2rem', width: '50%' }}>
         <div className={styles.interviewBlock}>
-          <span className={styles.interviewBlockLabel}>Оценка кандидата</span>
+          <span className={styles.interviewBlockLabel}>Заключение</span>
           <textarea
             className={styles.interviewTextarea}
-            placeholder="Оценка кандидата"
+            placeholder="Заключение"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />

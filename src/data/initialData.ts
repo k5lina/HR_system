@@ -44,7 +44,7 @@ export const positions: Position[] = [
   { position_id: 8, name: 'Товаровед', personnel_type_id: 2 },
   { position_id: 9, name: 'Директор информационно-вычислительного центра', personnel_type_id: 2 },
   { position_id: 10, name: 'Инженер-программист', personnel_type_id: 2 },
-  { position_id: 11, name: 'Системный администратор информационно-коммуникационных систем', personnel_type_id: 2 },
+  { position_id: 11, name: 'Системный администратор', personnel_type_id: 2 },
   { position_id: 12, name: 'Специалист по безопасности компьютерных систем и сетей', personnel_type_id: 2 },
   { position_id: 13, name: 'Директор по кадрам и быту', personnel_type_id: 2 },
   { position_id: 14, name: 'Менеджер по персоналу', personnel_type_id: 2 },
@@ -896,7 +896,7 @@ export const initialCandidates: Candidate[] = [
   },
   {
     candidate_id: 33,
-    last_name: 'Федоров', first_name: 'Максим', middle_name: 'Романович',
+    last_name: 'Фёдоров', first_name: 'Максим', middle_name: 'Романович',
     birth_date: '1991-05-18',
     work_experience: 7,
     resume_path: '/resumes/fedorov.pdf',

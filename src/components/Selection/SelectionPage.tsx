@@ -11,7 +11,7 @@ const PAGE_SIZE = 10;
 
 // ── ЗАГЛУШКА для вкладки «Собеседования с руководителем» ─────────────────────
 // Установите USE_STUB_MAIN = false, чтобы использовать реальные данные.
-const USE_STUB_MAIN = true;
+const USE_STUB_MAIN = false;
 const STUB_MAIN_ROWS = [
   { id: 14, candidateId: 14, displayId: '3-26-04-14', name: 'Фёдоров Максим Романович',   dept: 'Лаборатория',       pos: 'Технолог',                   date: '2026-04-16T14:00:00', status: 'Запланировано',    openRoute: '/candidates/33' },
   { id: 12, candidateId: 12, displayId: '3-26-03-12', name: 'Степанов Максим Дмитриевич', dept: 'Лаборатория',       pos: 'Технолог',                   date: '2026-03-25T11:00:00', status: 'Проведено успешно', openRoute: '/candidates/60' },
@@ -685,7 +685,7 @@ export default function SelectionPage() {
                   </tr>
                 );
               })}
-            {!USE_STUB_MAIN && !USE_STUB_SUITABLE && paginated.length === 0 && (
+            {!(USE_STUB_MAIN && activeStage === 'main') && !(USE_STUB_SUITABLE && activeStage === 'suitable') && paginated.length === 0 && (
               <tr>
                 <td colSpan={colSpan} className={styles.empty}>
                   Записей нет

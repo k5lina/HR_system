@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { nextId, fmtOfferId } from '../../utils';
+import { downloadOfferDocx } from '../../utils/offerDocx';
 import styles from '../Requests/Requests.module.css';
 
 export default function OfferForm() {
@@ -13,9 +14,11 @@ export default function OfferForm() {
     candidates, setCandidates,
     jobOffers, setJobOffers,
     offerStatuses, contractTypes,
-    publications, vacancies, requests,
+    publications, setPublications,
+    vacancies, setVacancies,
+    requests, setRequests,
     departmentPositions, positions, departments,
-    users, currentUser,
+    users, roles, currentUser,
   } = useApp();
 
   const candidate = candidates.find((c) => c.candidate_id === cId);
@@ -54,7 +57,7 @@ export default function OfferForm() {
     ? new Date(existing.created_at).toLocaleDateString('ru-RU')
     : new Date().toLocaleDateString('ru-RU');
 
-  const backTo = pub ? `/published/${pub.vacancy_id}` : '/home';
+  const backTo = '/selection?stage=offer';
 
   // ---- save ----
   function buildRecord(statusId: number) {
@@ -91,6 +94,35 @@ export default function OfferForm() {
     setCandidates((prev) =>
       prev.map((c) => c.candidate_id === cId ? { ...c, stage_id: 6 } : c),
     );
+    // Принятие предложения завершает подбор: вакансия закрывается,
+    // её активные публикации снимаются, а связанная заявка → «Выполнена».
+    if (vacancy) {
+      const now = new Date().toISOString();
+      const today = now.slice(0, 10);
+      setVacancies((prev) =>
+        prev.map((v) =>
+          v.vacancy_id === vacancy.vacancy_id
+            ? { ...v, vacancy_status_id: 3, closed_at: today, updated_at: now }
+            : v,
+        ),
+      );
+      setPublications((prev) =>
+        prev.map((p) =>
+          p.vacancy_id === vacancy.vacancy_id && p.is_active
+            ? { ...p, is_active: false, unpublished_at: today }
+            : p,
+        ),
+      );
+      if (linkedRequest) {
+        setRequests((prev) =>
+          prev.map((r) =>
+            r.request_id === linkedRequest.request_id
+              ? { ...r, request_status_id: 3 }
+              : r,
+          ),
+        );
+      }
+    }
     navigate(backTo);
   }
 
@@ -98,6 +130,47 @@ export default function OfferForm() {
     persist(buildRecord(3)); // declined
     setShowRejectModal(false);
     navigate(backTo);
+  }
+
+  function handleDownload() {
+    const contractType = contractTypes.find((c) => c.contract_type_id === contractTypeId)?.name ?? '—';
+    const fmtDate = (d: Date) => d.toLocaleDateString('ru-RU');
+    const startDateStr = startDate ? fmtDate(new Date(startDate)) : '—';
+
+    // Дата письма — дата создания оффера (или сегодня); срок актуальности +7 дней.
+    const letterDateObj = existing?.created_at ? new Date(existing.created_at) : new Date();
+    const validUntilObj = new Date(letterDateObj.getTime() + 6 * 24 * 60 * 60 * 1000);
+
+    // Менеджер по подбору = текущий пользователь. Телефон берём из полного
+    // профиля (users), роль — из справочника ролей.
+    const me = users.find((u) => u.user_id === currentUser?.user_id);
+    const managerShort = me
+      ? `${me.last_name} ${me.first_name[0]}.${me.middle_name ? me.middle_name[0] + '.' : ''}`
+      : (currentUser?.full_name ?? '—');
+    const managerRole = roles.find((r) => r.role_id === currentUser?.role_id)?.name
+      ?? 'Менеджер по подбору персонала';
+
+    const offerLabel = existing ? fmtOfferId(existing.offer_id, existing.created_at) : '';
+    downloadOfferDocx(
+      {
+        candidateName,
+        position: positionName,
+        department: deptName,
+        contractType,
+        salary: String(proposedSalary ?? ''),
+        startDate: startDateStr,
+        workSchedule: workSchedule || '—',
+        responsibilities: responsibilities || '—',
+        workConditions: workConditions || '—',
+        managerRole,
+        managerName: managerShort,
+        managerEmail: me?.email ?? currentUser?.email ?? '—',
+        managerPhone: me?.phone ?? '—',
+        letterDate: fmtDate(letterDateObj),
+        validUntil: fmtDate(validUntilObj),
+      },
+      offerLabel ? `Предложение_о_трудоустройстве_${offerLabel}` : 'Предложение_о_трудоустройстве',
+    );
   }
 
   if (!candidate) return <p className={styles.empty}>Кандидат не найден</p>;
@@ -225,7 +298,7 @@ export default function OfferForm() {
 
       {/* Download offer */}
       <div style={{ marginTop: '1.5rem' }}>
-        <button className={styles.iconLinkBtn} disabled>
+        <button className={styles.iconLinkBtn} onClick={handleDownload}>
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
             <path d="M10 3v10M6 9l4 4 4-4M4 17h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>

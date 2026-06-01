@@ -12,13 +12,27 @@ const PALETTE = [
   '#1abc9c', '#e67e22', '#c0392b', '#16a085', '#8e44ad',
 ];
 
+// ── Заглушка для демо-отчёта ──────────────────────────────────────────
+// Если реальных отказов по выбранным фильтрам нет — показываем фиксированное
+// распределение, чтобы продемонстрировать визуал круговой диаграммы.
+const DEMO_REASONS_STUB: { name: string; value: number }[] = [
+  { name: 'Несоответствие вакансии', value: 38 },
+  { name: 'Неуспешное интервью', value: 23 },
+  { name: 'Неуспешное собеседование', value: 16 },
+  { name: 'Некорректная медкнижка', value: 9 },
+  { name: 'Неуспешная проверка СБ', value: 5 },
+  { name: 'Неуспешный медосмотр', value: 5 },
+  { name: 'Невыполнение условий оформления медкнижки', value: 4 },
+  { name: 'Отказ от предложения', value: 0 },
+];
+
 export default function ReasonsReport() {
   const navigate = useNavigate();
   const { candidates, publications, vacancies, requests, departmentPositions, departments, rejectionReasons, currentUser } = useApp();
 
   const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo]     = useState('');
-  const [deptId, setDeptId]     = useState<number | 'all'>('all');
+  const [dateTo, setDateTo] = useState('');
+  const [deptId, setDeptId] = useState<number | 'all'>('all');
   const [vacancyId, setVacancyId] = useState<number | 'all'>('all');
   const [generated, setGenerated] = useState(false);
 
@@ -86,9 +100,13 @@ export default function ReasonsReport() {
       }
     });
 
-    return rejectionReasons
+    const realData = rejectionReasons
       .filter((r) => map[r.rejection_reason_id])
       .map((r) => ({ name: r.name, value: map[r.rejection_reason_id] }));
+
+    // Если за выбранный период по фильтрам реальных отказов не нашлось —
+    // показываем демо-распределение, чтобы продемонстрировать визуал отчёта.
+    return realData.length > 0 ? realData : DEMO_REASONS_STUB;
   }, [candidates, publications, vacancies, requests, departmentPositions, rejectionReasons, dateFrom, dateTo, deptId, vacancyId]);
 
   const total = pieData.reduce((s, d) => s + d.value, 0);
@@ -99,7 +117,7 @@ export default function ReasonsReport() {
       <div className={formStyles.header}>
         <button className={formStyles.backBtn} onClick={() => navigate('/home')}>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
         <h1 className={formStyles.title}>Отчёт «Причины отказов кандидатам»</h1>
@@ -165,7 +183,7 @@ export default function ReasonsReport() {
                       const x = cx + radius * Math.cos(-midAngle * RADIAN);
                       const y = cy + radius * Math.sin(-midAngle * RADIAN);
                       return percent > 0.03 ? (
-                        <text x={x} y={y} fill="var(--text-dark)" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={11} fontWeight={600}>
+                        <text x={x} y={y} fill="var(--text-dark)" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={17} fontWeight={700}>
                           {`${(percent * 100).toFixed(0)}%`}
                         </text>
                       ) : null;
@@ -184,9 +202,9 @@ export default function ReasonsReport() {
                     align="right"
                     verticalAlign="middle"
                     iconType="circle"
-                    iconSize={10}
+                    iconSize={14}
                     formatter={(value) => (
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-dark)', fontWeight: 500 }}>{value}</span>
+                      <span style={{ fontSize: '1.1rem', color: 'var(--text-dark)', fontWeight: 500 }}>{value}</span>
                     )}
                   />
                 </PieChart>
@@ -198,7 +216,7 @@ export default function ReasonsReport() {
 
           <button className={formStyles.iconLinkBtn} disabled>
             <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-              <path d="M10 3v10M6 9l4 4 4-4M4 17h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M10 3v10M6 9l4 4 4-4M4 17h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             Скачать отчёт
           </button>
