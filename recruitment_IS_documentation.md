@@ -947,7 +947,7 @@ INSERT INTO Email\_template(template\_id,name,subject,body) VALUES
 ### 8.1 Файловая структура (фактическая)
 
 ```
-HR_system/
+recruitment-system/
 ├── public/
 │   └── logo.png
 ├── src/
@@ -1022,6 +1022,5 @@ HR_system/
 Сброс всех ключей `hr_*` выполняется через кнопку «Сбросить данные» в шапке (только Администратор) → функция `resetAllData()` в `src/context/AppContext.tsx`.
 
 \---
-
 
 
