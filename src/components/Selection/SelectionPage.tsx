@@ -21,7 +21,7 @@ const STUB_MAIN_ROWS = [
 
 // ── ЗАГЛУШКА для вкладки «Подходящие кандидаты» (руководитель) ───────────────
 // Установите USE_STUB_SUITABLE = false, чтобы использовать реальные данные.
-const USE_STUB_SUITABLE = true;
+const USE_STUB_SUITABLE = false;
 const STUB_SUITABLE_ROWS = [
   { id: 14, candidateId: 14, displayId: '3-26-04-14', name: 'Фёдоров Максим Романович',   dept: 'Лаборатория', pos: 'Технолог', status: 'Проведено успешно', openRoute: '/candidates/33' },
   { id: 12, candidateId: 12, displayId: '3-24-03-12', name: 'Степанов Максим Дмитриевич', dept: 'Лаборатория', pos: 'Технолог', status: 'Проведено успешно', openRoute: '/candidates/60' },

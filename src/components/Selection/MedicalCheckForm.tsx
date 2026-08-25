@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { nextId, fmtMedicalCheckId } from '../../utils';
@@ -32,6 +32,25 @@ export default function MedicalCheckForm() {
 
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectionId, setRejectionId] = useState(rejectionReasons[0]?.rejection_reason_id ?? 1);
+
+  // Загруженное заключение (демо): храним имя и objectURL для просмотра.
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [conclusionFile, setConclusionFile] = useState<{ name: string; url: string } | null>(null);
+
+  function handlePickFile() {
+    fileInputRef.current?.click();
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (conclusionFile) URL.revokeObjectURL(conclusionFile.url);
+    setConclusionFile({ name: file.name, url: URL.createObjectURL(file) });
+  }
+
+  function handleOpenFile() {
+    if (conclusionFile) window.open(conclusionFile.url, '_blank');
+  }
 
   // ---- resolve meta ----
   const pub = candidate ? publications.find((p) => p.publication_id === candidate.publication_id) : null;
@@ -93,6 +112,7 @@ export default function MedicalCheckForm() {
 
   function handleApplyExamResult() {
     if (medExamResult === true) {
+      setStatusId(4); // «Пройдена» — отображается на форме
       persist(buildRecord(4)); // completed
       // Auto-create job offer if not yet exists
       setJobOffers((prev) => {
@@ -114,7 +134,7 @@ export default function MedicalCheckForm() {
       setCandidates((prev) =>
         prev.map((c) => c.candidate_id === cId ? { ...c, stage_id: 6 } : c),
       );
-      navigate(backTo);
+      // Остаёмся на форме, чтобы был виден статус «Пройдена».
     } else if (medExamResult === false) {
       persist(buildRecord(statusId));
       setShowRejectModal(true);
@@ -273,14 +293,36 @@ export default function MedicalCheckForm() {
           <button className={styles.btnApply} onClick={handleApplyExamResult}>Применить</button>
         </div>
 
-        {/* Row 4: download conclusion */}
+        {/* Row 4: upload / open conclusion */}
         <div className={styles.checklistItem}>
-          <button className={styles.iconLinkBtn} disabled>
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-              <path d="M10 3v10M6 9l4 4 4-4M4 17h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Загрузить заключение
-          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+          />
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <button className={styles.iconLinkBtn} onClick={handlePickFile}>
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                <path d="M10 17V7M6 11l4-4 4 4M4 3h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Загрузить заключение
+            </button>
+            {conclusionFile && (
+              <button className={styles.iconLinkBtn} onClick={handleOpenFile}>
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 4C5 4 2 10 2 10s3 6 8 6 8-6 8-6-3-6-8-6z" stroke="currentColor" strokeWidth="1.8"/>
+                  <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.8"/>
+                </svg>
+                Открыть заключение
+              </button>
+            )}
+          </div>
+          {conclusionFile && (
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', marginTop: '0.4rem' }}>
+              {conclusionFile.name}
+            </span>
+          )}
         </div>
       </div>
 

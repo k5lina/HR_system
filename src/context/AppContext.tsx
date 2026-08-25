@@ -28,7 +28,7 @@ import {
 // Безопасна — ничего не перезаписывает, только добавляет отсутствующее.
 // Запускается до рендера компонентов; если ключ ещё не создан — пропускает (usePersisted создаст при рендере).
 (function migrateData() {
-  function patchList<T extends Record<string, unknown>>(key: string, idField: string, fallback: T[], newItems: T[]) {
+  function patchList<T>(key: string, idField: keyof T, fallback: T[], newItems: T[]) {
     try {
       const raw = localStorage.getItem(key);
       const list: T[] = raw ? JSON.parse(raw) : [...fallback];
@@ -218,6 +218,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [securityChecks, setSecurityChecks] = usePersisted<SecurityCheck[]>('hr_security_checks', initialSecurityChecks);
   const [medicalChecks, setMedicalChecks] = usePersisted<MedicalCheck[]>('hr_medical_checks', initialMedicalChecks);
   const [jobOffers, setJobOffers] = usePersisted<JobOffer[]>('hr_job_offers', initialJobOffers);
+
+  // Одноразовая самоочистка публикаций: в ранних сид-данных была повреждённая
+  // запись (дубликат publication_id, ссылка на несуществующую вакансию). Из-за
+  // неё новые публикации перекрывались «фантомной» при группировке по вакансии.
+  // Здесь убираем дубли publication_id и публикации-сироты у уже сохранённого стора.
+  useEffect(() => {
+    setPublications((prev) => {
+      const vacIds = new Set(vacancies.map((v) => v.vacancy_id));
+      const seen = new Set<number>();
+      const cleaned = prev.filter((p) => {
+        if (!vacIds.has(p.vacancy_id)) return false; // сирота: вакансии нет
+        if (seen.has(p.publication_id)) return false; // дубликат id
+        seen.add(p.publication_id);
+        return true;
+      });
+      return cleaned.length === prev.length ? prev : cleaned;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const login = useCallback((email: string, password: string): boolean => {
     const user = users.find((u) => u.email === email && u.password === password && u.is_active);

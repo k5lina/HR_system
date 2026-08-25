@@ -3,12 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import styles from './Auth.module.css';
 
-const DEMO_USERS = [
-  { label: 'Администратор ', email: 'admin@ecomenu.ru', password: 'admin123' },
-  { label: 'Менеджер по подбору персонала', email: 'manager@ecomenu.ru', password: 'manager123' },
-  { label: 'Руководитель подразделения', email: 'head@ecomenu.ru', password: 'head123' },
-];
-
 export default function LoginPage() {
   const { login } = useApp();
   const navigate = useNavigate();
@@ -26,12 +20,6 @@ export default function LoginPage() {
     }
   }
 
-  function fillDemo(e: string, p: string) {
-    setEmail(e);
-    setPassword(p);
-    setError('');
-  }
-
   return (
     <div className={styles.wrapper}>
       <div className={styles.leftPanel}>
@@ -45,7 +33,7 @@ export default function LoginPage() {
         <div className={styles.card}>
           <h1 className={styles.cardTitle}>Добро пожаловать!</h1>
           <p className={styles.cardSub}>Введите данные для входа в систему</p>
-          <form onSubmit={handleSubmit} className={styles.form}>
+          <form onSubmit={handleSubmit} className={styles.form} autoComplete="off">
             <div className={styles.field}>
               <label className={styles.label}>Логин</label>
               <input
@@ -54,6 +42,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="email@ecomenu.ru"
+                autoComplete="off"
                 required
               />
             </div>
@@ -65,20 +54,13 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                autoComplete="new-password"
                 required
               />
             </div>
             {error && <p className={styles.error}>{error}</p>}
             <button type="submit" className={styles.btn}>Войти</button>
           </form>
-          <div className={styles.demo}>
-            <p className={styles.demoTitle}>Быстрый вход (демо)</p>
-            {DEMO_USERS.map((u) => (
-              <button key={u.email} className={styles.demoBtn} onClick={() => fillDemo(u.email, u.password)}>
-                {u.label}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
     </div>

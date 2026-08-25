@@ -456,16 +456,6 @@ export const initialPublications: VacancyPublication[] = [
     vacancy_id: 4,
     channel_id: 2,
   },
-  {
-    publication_id: 9,
-    published_at: '2024-04-17',
-    url: 'https://hh.ru/vacancy/45678',
-    views_count: 267,
-    responses_count: 6,
-    is_active: true,
-    vacancy_id: 6,
-    channel_id: 1,
-  },
 ];
 
 export const initialCandidates: Candidate[] = [

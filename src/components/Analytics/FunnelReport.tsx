@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
+import { downloadMockPdf } from '../../utils/mockPdf';
 import styles from './Analytics.module.css';
 import formStyles from '../Requests/Requests.module.css';
 
@@ -218,7 +219,7 @@ export default function FunnelReport() {
 
       {/* Download */}
       {generated && (
-        <button className={formStyles.iconLinkBtn} disabled>
+        <button className={formStyles.iconLinkBtn} onClick={() => downloadMockPdf('Voronka_kandidatov', ['Funnel report'])}>
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
             <path d="M10 3v10M6 9l4 4 4-4M4 17h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
