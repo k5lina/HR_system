@@ -16,7 +16,7 @@
 
 ---
 
-![Главная страница HR System](./designs/main_menu_HR.png)
+![Главная страница HR System](./docs/screenshots/hr-dashboard.jpg)
 
 ## О проекте
 
@@ -119,4 +119,3 @@ public/           # статические ресурсы
 ## Автор
 
 [Екатерина Пятлина](https://github.com/k5lina)
-
